@@ -12,6 +12,10 @@
  ## Meta
  - This playground was developed and tested with Xcode 9.2 (Swift 4.0.3) TODO UPDATE
  - The `RegEx` class uses in this playground is a light wrapper around [`NSRegularExpression`][NSRegularExpression] and its related APIs, to make working with regular expressions in swift easier
+ 
+ ## 3rd party dependencies used in this playground:
+ - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) AutoLayout syntactic sugar
+ - [github.com/thii/SwiftHEXColors](https://github.com/thii/SwiftHEXColors) NSColor hex initializer
 
  > Since Swift doesn't support unescaped string literals, this playground uses a little hack to keep regular expressions simple and easy to read.
  > The `RegEx` class has two initializers

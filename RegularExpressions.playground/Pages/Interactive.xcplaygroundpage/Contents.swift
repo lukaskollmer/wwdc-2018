@@ -36,6 +36,12 @@ extension NSAppearance {
     static let dark = NSAppearance(named: NSAppearance.Name.vibrantDark)!
 }
 
+extension NSEdgeInsets {
+    init(allSides value: CGFloat) {
+        self.init(top: value, left: value, bottom: value, right: -value)
+    }
+}
+
 // https://stackoverflow.com/a/25952895/2513803
 extension NSImage {
     func tinted(withColor tint: NSColor) -> NSImage {
@@ -452,30 +458,24 @@ class LKMatchInfoViewController: NSViewController {
         super.viewDidLoad()
         
         
-        let captureGroupInfo = (0..<match.numberOfCapturingGroups).map { i -> String in
-            return "\(i): range=\(match.range(ofCapturingGroup: i)) content='\(match.contents(ofCapturingGroup: i))'"
-        }.joined(separator: "\n")
-        
-        //var captureGroupInfo = [String]()
-        
-        //for i in 0..<match.numberOfCapturingGroups {
-        //    let groupInfo = "\(i): range=\(match.range(ofCapturingGroup: i)) content=\(match.contents(ofCapturingGroup: i))"
-            
-//            captureGroupInfo.append(groupInfo)
-//        }
+        var captureGroupInfo_ = [String]()
+        match.enumerateCapturingGroups { index, range, content in
+            captureGroupInfo_.append("\(index): range=\(range) content='\(content)'")
+        }
         
         let content = """
         Match: #\(match.index)
         Range: \(match.range) '\(match.initialString.substring(withRange: match.range))'
         Capture Groups:
-        \(captureGroupInfo)
+        \(captureGroupInfo_.joined(separator: "\n"))
         """
         
         let label = NSTextField(labelWithString: content)
         label.font = .menlo
+        label.isSelectable = true
         
         self.view.addSubview(label)
-        label.edgesToSuperview() // This automatically resizes the superview to fit the entire label
+        label.edgesToSuperview(insets: NSEdgeInsets(allSides: 5)) // This automatically resizes the superview to fit the entire label
     }
 }
 
@@ -495,7 +495,6 @@ struct Defaults {
         set { defaults.set(newValue, forKey: #function) }
     }
 }
-
 
 PlaygroundPage.current.liveView = LKVisualRegExViewController()
 

@@ -3,7 +3,8 @@
     <pages>
         <page name='Table of Contents'/>
         <page name='Introduction'/>
-        <page name='Capture Groups'/>
         <page name='Character Sets'/>
+        <page name='Capture Groups'/>
+        <page name='Interactive'/>
     </pages>
 </playground>

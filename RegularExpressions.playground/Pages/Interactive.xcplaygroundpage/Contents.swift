@@ -7,6 +7,18 @@ print("HEY")
 
 
 /*
+ VisualRegEx.swift
+ 
+ This file implements `LKVisualRegExViewController`, a subclass of NSViewController that can be used to visualize a regular expression.
+ 
+ 
+ Notes:
+ - For performance reasons
+ 
+ 
+ */
+
+/*
  TODO: when clicking the regex text field for the first time, the cursor goes to the beginning of the text field for a fraction of a second, before going to the end of the text field. would be nice if we could fix that
  
  // IDEA make a regex to filter all swift files in a list of filenames
@@ -57,7 +69,6 @@ class LKFocusAwareTextField: NSTextField {
     
     override func becomeFirstResponder() -> Bool {
         let retval = super.becomeFirstResponder()
-        print(#function, retval)
         self.didBecomeFirstResponderAction?()
         return retval
     }
@@ -103,7 +114,7 @@ class LKMatchHighlightView: NSView {
 }
 
 
-class LKViewController: NSViewController {
+class LKVisualRegExViewController: NSViewController {
     // Title Bar
     let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
     let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer") // TODO make this a link?
@@ -158,7 +169,6 @@ class LKViewController: NSViewController {
         setupTextView()
         
         // Add all views
-        // TODO put all of this on a single line?
         [
             titleLabel,
             subtitleLabel,
@@ -166,7 +176,7 @@ class LKViewController: NSViewController {
             regexTextField,
             regexTestStringTextViewTitleLabel,
             regexTestStringTextViewContainingScrollView
-            ].forEach(self.view.addSubview)
+        ].forEach(self.view.addSubview)
         
         //
         // Auto Layout
@@ -192,8 +202,12 @@ class LKViewController: NSViewController {
             (regexTestStringTextViewContainingScrollView, defaultSpacing)
         ]
         
-        for (index, element) in layout.suffix(from: 1).enumerated() {
-            // index is relative to the slice, meaning we can use it to access the previous element
+        //for (index, element) in layout.suffix(from: 1).enumerated() {
+        //    element.view.topToBottom(of: layout[index].view, offset: element.offset)
+        //    element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
+        //}
+        
+        layout.suffix(from: 1).enumerated().forEach { (index: Int, element: (view: NSView, offset: CGFloat)) in
             element.view.topToBottom(of: layout[index].view, offset: element.offset)
             element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
         }
@@ -340,7 +354,7 @@ class LKViewController: NSViewController {
         let sv = self.regexTestStringTextViewContainingScrollView
         
         measure("process matches") {
-            for match in regex.matches(in: tv.string) {
+            regex.matches(in: tv.string).forEach { match in
                 // TODO can we safely force-unwrap the text container?
                 
                 match.enumerateCapturingGroups { index, range, content in
@@ -364,13 +378,17 @@ class LKViewController: NSViewController {
         }
         
         measure("insert views") {
-            // the scroll view's only subview is a NSClipView, which has at least 3 subviews, the last of which is the text view
             
+            // Add the highlight views to the scroll view's view hierarchy
+            // This is split up in two parts:
+            // We first add all highlight views for full matches, and then all highlight views for capture groups
+            // This ensures that the highlight views for capture groups are on top of the highlight views for full
+            // matches and we don't have to manually rearrange the view hierarchy
             
             let addViews = { (view: NSView) -> Void in
+                // the scroll view's only subview is a NSClipView, which has at least 3 subviews, the last of which is the text view
                 sv.subviews.first!.addSubview(view, positioned: .below, relativeTo: tv)
             }
-            
             
             highlightViews
                 .filter { $0.kind == .fullMatch }
@@ -379,35 +397,20 @@ class LKViewController: NSViewController {
             highlightViews
                 .filter { $0.kind == .capturingGroup }
                 .forEach(addViews)
-            
-            //highlightViews.forEach { sv.subviews.first!.addSubview($0, positioned: .below, relativeTo: tv) }
-            
-            //sv.subviews.first!.sortSubviews({ (obj1, obj2, _) -> ComparisonResult in
-            //    return .orderedAscending
-            //}, context: nil)
-            
-            // TODO if this gets too slow (not sure why, but it did happen), use the other approach that directly inserts the subviews into the subview array
-            //sv.subviews.first!.subviews.insert(contentsOf: highlightViews, at: 2)
         }
     }
     
     var highlightViews = [LKMatchHighlightView]()
     
-    
-    func scheduleUpdateMatches() {
-        // This function gets called every time the regex text field or the test string text view changes
-        // In order to improve performance, we wait until a quarter of a second after the last edit to update the highl
-    }
 }
 
 
-extension LKViewController: NSTextFieldDelegate, NSTextViewDelegate {
+extension LKVisualRegExViewController: NSTextFieldDelegate, NSTextViewDelegate {
     
     
     override func controlTextDidChange(_ notification: Notification) {
         guard notification.object as? NSTextField == self.regexTextField else { return }
         Defaults.regex = regexTextField.stringValue
-        
         updateMatches()
     }
     
@@ -491,7 +494,7 @@ struct Defaults {
 }
 
 
-PlaygroundPage.current.liveView = LKViewController()
+PlaygroundPage.current.liveView = LKVisualRegExViewController()
 
 
 //: [Next](@next)

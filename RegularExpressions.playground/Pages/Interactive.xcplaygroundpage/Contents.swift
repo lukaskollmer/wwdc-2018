@@ -5,9 +5,63 @@ import PlaygroundSupport
 
 print("HEY")
 
+
 /*
  TODO: when clicking the regex text field for the first time, the cursor goes to the beginning of the text field for a fraction of a second, before going to the end of the text field. would be nice if we could fix that
+ 
+ // IDEA make a regex to filter all swift files in a list of filenames
  */
+
+extension NSFont {
+    func withSize(_ size: CGFloat) -> NSFont {
+        return NSFont(name: self.fontName, size: size)!
+    }
+    
+    static let menlo = NSFont(name: "Menlo", size: NSFont.systemFontSize)!
+}
+
+extension NSAppearance {
+    static let dark = NSAppearance(named: NSAppearance.Name.vibrantDark)!
+}
+
+// https://stackoverflow.com/a/25952895/2513803
+extension NSImage {
+    func tinted(withColor tint: NSColor) -> NSImage {
+        guard let tinted = self.copy() as? NSImage else { return self }
+        tinted.lockFocus()
+        tint.set()
+        
+        let imageRect = NSRect(origin: NSZeroPoint, size: self.size)
+        imageRect.fill(using: .sourceAtop)
+        
+        tinted.unlockFocus()
+        return tinted
+    }
+}
+
+
+func measure(_ title: String? = nil, _ block: () -> Void) {
+    let start = Date()
+    
+    block()
+    
+    let end = Date()
+    let msg = title != nil ? " \(title!)" : ""
+    print("[⏱]\(msg) \(end.timeIntervalSince(start))")
+}
+
+
+class LKFocusAwareTextField: NSTextField {
+    
+    var didBecomeFirstResponderAction: (() -> Void)?
+    
+    override func becomeFirstResponder() -> Bool {
+        let retval = super.becomeFirstResponder()
+        print(#function, retval)
+        self.didBecomeFirstResponderAction?()
+        return retval
+    }
+}
 
 
 let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
@@ -19,16 +73,46 @@ class LKView: NSView {
     }
 }
 
+class LKMatchHighlightView: NSView {
+    
+    enum Kind {
+        case fullMatch
+        case capturingGroup
+    }
+    
+    let match: RegEx.Result
+    let kind: Kind
+    
+    init(match: RegEx.Result, frame: NSRect, color: NSColor, kind: Kind) {
+        self.kind = kind
+        self.match = match
+        super.init(frame: frame)
+        
+        // Setup background color
+        self.layer = CALayer()
+        self.layer?.backgroundColor = .white
+        
+        let colorView = NSView()
+        colorView.layer = CALayer()
+        colorView.layer?.backgroundColor = color.cgColor
+        self.addSubview(colorView)
+        colorView.edgesToSuperview()
+    }
+    
+    required init?(coder decoder: NSCoder) { fatalError() }
+}
+
 
 class LKViewController: NSViewController {
     // Title Bar
-    let titleLabel = NSTextField(labelWithString: "Visual RegEx") // "Visual RegEx"
-    let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer")
+    let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
+    let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer") // TODO make this a link?
     
     
     // Regex Text Field
     let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
-    let regexTextField = NSTextField()
+    let regexTextField = LKFocusAwareTextField()
+    let regexCompilationErrorImageView = NSImageView(image: NSImage(named: .invalidDataFreestandingTemplate)!.tinted(withColor: .red))
     
     // Test String Text View
     let regexTestStringTextViewTitleLabel = NSTextField(labelWithString: "Test Input")
@@ -43,7 +127,7 @@ class LKViewController: NSViewController {
     required init?(coder: NSCoder) { fatalError() }
     
     override func loadView() {
-        self.view = LKView(frame: SIZE)
+        self.view = NSView(frame: SIZE)
         self.view.layer = CALayer()
         //self.view.layer?.backgroundColor = NSColor(red: 236/255, green: 236/255, blue: 236/255, alpha: 1).cgColor
         self.view.layer?.backgroundColor = .white
@@ -51,8 +135,6 @@ class LKViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let font = NSFont(name: "Menlo", size: 14)
         
         // Title
         titleLabel.font = NSFont.systemFont(ofSize: 20, weight: .medium)
@@ -63,12 +145,15 @@ class LKViewController: NSViewController {
         subtitleLabel.alignment = .center
         
         // Regex Entry
-        regexTextField.font = font
+        regexTextField.font = NSFont.menlo.withSize(14)
         regexTextField.placeholderString = "Enter regex here..."
         
         // Test String Entry
-        regexTestStringTextView.font = font
-        regexTestStringTextView.backgroundColor = NSColor.lightGray.withAlphaComponent(0.5)
+        regexTestStringTextView.font = NSFont.menlo.withSize(17)
+        regexTestStringTextView.isRichText = false
+        regexTestStringTextView.backgroundColor = NSColor.clear.withAlphaComponent(0)
+        regexTestStringTextView.drawsBackground = true
+        regexTestStringTextViewContainingScrollView.backgroundColor = .clear
         
         setupTextView()
         
@@ -116,6 +201,14 @@ class LKViewController: NSViewController {
         regexTestStringTextViewContainingScrollView.bottomToSuperview(offset: -defaultOffset)
      
         
+        
+        // Setup the regex compilation error indicator
+        
+        regexTextField.addSubview(regexCompilationErrorImageView)
+        regexCompilationErrorImageView.edgesToSuperview(excluding: [.left], insets: NSEdgeInsets(top: 0, left: 0, bottom: 0, right: -5))
+        regexCompilationErrorImageView.isHidden = true
+        
+        
         // Register observers and set default values
         
         regexTextField.delegate = self
@@ -124,11 +217,19 @@ class LKViewController: NSViewController {
         regexTextField.stringValue = Defaults.regex
         regexTestStringTextView.string = Defaults.testInput
         
+        // Hook into the regex text field to detect when it becomes first responder
+        // Why is this necessary? When a NSTextField becomes first responder, AppKit adds a new subview (_NSKeyboardFocusClipView). We have to make sure that our regex compilation error image view is on top of that other view, so that it remains visible
+        regexTextField.didBecomeFirstResponderAction = {
+            self.keepCompilationErrorImageViewVisible()
+        }
     }
     
     
     private func setupTextView() {
         // TODO for whatever reason, the scroll bar does not appear. (probably bc auto layout)
+        
+        // This only configures the layout-related attributes of the text view and its containing scroll view
+        // Everything else is configured in `viewDidLoad`
         
         let scrollView = self.regexTestStringTextViewContainingScrollView
         let contentSize = scrollView.contentSize
@@ -151,40 +252,158 @@ class LKViewController: NSViewController {
         
         scrollView.documentView = textView
         
-        
-        //let textStorage = NSTextStorage()
-        //textStorage.delegate = self.textStorageDelegate
-        //textView.layoutManager?.replaceTextStorage(textStorage)
     }
-    //private let textStorageDelegate = LKHighlighter()
+    
     
     override func viewWillAppear() {
         super.viewWillAppear()
         
         // The delegates don't get called when the text is changed programmatically // TODO how the fuck is that spelled
         updateMatches()
+        
+        
+        
+        // Addinf the tracking area to `self.view` instead of the text view means that we also get hover events when the text view isn't first responder
+        let trackingArea = NSTrackingArea(rect: self.view.frame, options: [.mouseMoved, .activeAlways], owner: self, userInfo: nil)
+        self.view.addTrackingArea(trackingArea)
+    }
+    
+    var matchInfoPopover: NSPopover?
+    
+    var currentlyHoveredHighlightView: LKMatchHighlightView? {
+        didSet {
+            // show/hide depending on whether the value is nil
+            guard currentlyHoveredHighlightView != oldValue else { return }
+            
+            if let currentlyHoveredHighlightView = currentlyHoveredHighlightView {
+                // show a new highlight view
+                
+                matchInfoPopover?.performClose(nil)
+                matchInfoPopover = nil
+                
+                let vc = LKMatchInfoViewController(match: currentlyHoveredHighlightView.match)
+                matchInfoPopover = NSPopover()
+                matchInfoPopover?.appearance = .dark
+                matchInfoPopover?.contentViewController = vc
+                matchInfoPopover?.behavior = .semitransient
+                matchInfoPopover?.show(relativeTo: currentlyHoveredHighlightView.bounds, of: currentlyHoveredHighlightView, preferredEdge: .maxY)
+            } else {
+                // remove the last highlight view
+                matchInfoPopover?.performClose(nil)
+                matchInfoPopover = nil
+            }
+        }
+    }
+    
+    override func mouseMoved(with event: NSEvent) {
+        let location = self.regexTestStringTextView.convert(event.locationInWindow, from: self.view)
+        
+        guard let highlightView = self.highlightViews.first(where: { $0.kind == .fullMatch &&  $0.frame.contains(location) }) else {
+            // we're hovering over an un-highlighted part of the text view
+            currentlyHoveredHighlightView = nil
+            return
+        }
+        
+        // we're currently hovering over *some* highlight view
+        if highlightView != currentlyHoveredHighlightView {
+            currentlyHoveredHighlightView = highlightView
+        }
+    }
+    
+    private func keepCompilationErrorImageViewVisible() {
+        print(regexTextField.subviews)
+        regexTextField.sortSubviews({ a, b, _ -> ComparisonResult in
+            if a is NSImageView {
+                return ComparisonResult.orderedDescending
+            } else {
+                return ComparisonResult.orderedAscending
+            }
+        }, context: nil)
+        print(regexTextField.subviews)
     }
     
     
     private func updateMatches() {
         
+        
+        self.highlightViews.forEach { $0.removeFromSuperview() }
+        self.highlightViews.removeAll()
+        
         guard let regex = try? RegEx(self.regexTextField.stringValue) else {
-            // todo reset last syntax highlighting
-            // TODO show a red triangle when the regex didn't compile successfully
+            regexCompilationErrorImageView.isHidden = false
             return
         }
         
-        let matches = regex.matches(in: self.regexTestStringTextView.string)
+        regexCompilationErrorImageView.isHidden = true
         
-        print(matches)
+        let tv = self.regexTestStringTextView
+        let sv = self.regexTestStringTextViewContainingScrollView
         
-        // TODO somehow illustrate the matched substring
-        // or show a list of the matches (or both)
+        measure("process matches") {
+            for match in regex.matches(in: tv.string) {
+                // TODO can we safely force-unwrap the text container?
+                
+                match.enumerateCapturingGroups { index, range, content in
+                    tv.layoutManager?.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: tv.textContainer!) { rect, stop in
+                        
+                        let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .capturingGroup
+                        
+                        let color = { () -> NSColor in
+                            switch kind {
+                            case .fullMatch: return NSColor.init(hexString: "#CCE7A5")!
+                            case .capturingGroup: return NSColor.init(hexString: "#85C3FA")!
+                            }
+                        }()
+                        
+                        let highlightView = LKMatchHighlightView(match: match, frame: rect, color: color, kind: kind)
+                        self.highlightViews.append(highlightView)
+                    }
+                }
+                
+            }
+        }
+        
+        measure("insert views") {
+            // the scroll view's only subview is a NSClipView, which has at least 3 subviews, the last of which is the text view
+            
+            
+            let addViews = { (view: NSView) -> Void in
+                sv.subviews.first!.addSubview(view, positioned: .below, relativeTo: tv)
+            }
+            
+            
+            highlightViews
+                .filter { $0.kind == .fullMatch }
+                .forEach(addViews)
+            
+            highlightViews
+                .filter { $0.kind == .capturingGroup }
+                .forEach(addViews)
+            
+            //highlightViews.forEach { sv.subviews.first!.addSubview($0, positioned: .below, relativeTo: tv) }
+            
+            //sv.subviews.first!.sortSubviews({ (obj1, obj2, _) -> ComparisonResult in
+            //    return .orderedAscending
+            //}, context: nil)
+            
+            // TODO if this gets too slow (not sure why, but it did happen), use the other approach that directly inserts the subviews into the subview array
+            //sv.subviews.first!.subviews.insert(contentsOf: highlightViews, at: 2)
+        }
+    }
+    
+    var highlightViews = [LKMatchHighlightView]()
+    
+    
+    func scheduleUpdateMatches() {
+        // This function gets called every time the regex text field or the test string text view changes
+        // In order to improve performance, we wait until a quarter of a second after the last edit to update the highl
     }
 }
 
 
 extension LKViewController: NSTextFieldDelegate, NSTextViewDelegate {
+    
+    
     override func controlTextDidChange(_ notification: Notification) {
         guard notification.object as? NSTextField == self.regexTextField else { return }
         Defaults.regex = regexTextField.stringValue
@@ -195,20 +414,67 @@ extension LKViewController: NSTextFieldDelegate, NSTextViewDelegate {
     func textDidChange(_ notification: Notification) {
         guard notification.object as? NSTextView == self.regexTestStringTextView else { return }
         Defaults.testInput = regexTestStringTextView.string
-        
         updateMatches()
     }
 }
 
 
-
-
-class LKHighlighter: NSObject, NSTextStorageDelegate {
-    
-    func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
-        print(#function)
+extension String {
+    func substring(withRange range: NSRange) -> String {
+        return NSString.init(string: self).substring(with: range)
     }
 }
+
+
+class LKMatchInfoViewController: NSViewController {
+    
+    let match: RegEx.Result
+    
+    init(match: RegEx.Result) {
+        self.match = match
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) { fatalError() }
+    
+    override func loadView() {
+        self.view = NSView(frame: .zero)
+        self.view.appearance = .dark
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        
+        let captureGroupInfo = (0..<match.numberOfCapturingGroups).map { i -> String in
+            return "\(i): range=\(match.range(ofCapturingGroup: i)) content='\(match.contents(ofCapturingGroup: i))'"
+        }.joined(separator: "\n")
+        
+        //var captureGroupInfo = [String]()
+        
+        //for i in 0..<match.numberOfCapturingGroups {
+        //    let groupInfo = "\(i): range=\(match.range(ofCapturingGroup: i)) content=\(match.contents(ofCapturingGroup: i))"
+            
+//            captureGroupInfo.append(groupInfo)
+//        }
+        
+        let content = """
+        Match: #\(match.index)
+        Range: \(match.range) '\(match.initialString.substring(withRange: match.range))'
+        Capture Groups:
+        \(captureGroupInfo)
+        """
+        
+        let label = NSTextField(labelWithString: content)
+        label.font = .menlo
+        
+        self.view.addSubview(label)
+        label.edgesToSuperview() // This automatically resizes the superview to fit the entire label
+    }
+}
+
+
+
 
 
 struct Defaults {

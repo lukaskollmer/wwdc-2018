@@ -343,7 +343,10 @@ class LKVisualRegExViewController: NSViewController {
         self.highlightViews.forEach { $0.removeFromSuperview() }
         self.highlightViews.removeAll()
         
-        guard let regex = try? RegEx(self.regexTextField.stringValue) else {
+        // TODO maybe show some UI to select which optinons should be enabled?
+        // TODO are there any other obvious options we should enable for this UI?
+        guard let regex = try? RegEx(self.regexTextField.stringValue, options: [.anchorsMatchLines]) else {
+            keepCompilationErrorImageViewVisible()
             regexCompilationErrorImageView.isHidden = false
             return
         }

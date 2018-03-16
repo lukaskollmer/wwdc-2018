@@ -1,13 +1,8 @@
 import Foundation
 
-postfix operator /
-public postfix func /(pattern: String) -> RegEx {
-    return RegEx(pattern)
-}
-
 
 extension String {
-    var range: NSRange {
+    public var range: NSRange {
         return NSRange(location: 0, length: self.count)
     }
 
@@ -29,6 +24,9 @@ public struct RegEx {
 
     /// The Result of evaluating a regular expression against a string
     public struct Result: CustomStringConvertible {
+        
+        /// The index of the match
+        public let index: Int
 
         /// The range of the match
         public var range: NSRange {
@@ -59,9 +57,10 @@ public struct RegEx {
         /// - Parameters:
         ///   - result: The result this match represents
         ///   - initialString: The full string the regex was matched against
-        init(result: NSTextCheckingResult, initialString: String) {
+        init(result: NSTextCheckingResult, initialString: String, index: Int) {
             self.result = result
             self.initialString = initialString
+            self.index = index
         }
 
 
@@ -93,18 +92,33 @@ public struct RegEx {
         public func contents(ofCapturingGroup groupName: String) -> String {
             return NSString(string: initialString).substring(with: self.result.range(withName: groupName))
         }
+        
+        public var numberOfCapturingGroups: Int {
+            return self.result.numberOfRanges
+        }
+        
+        public func range(ofCapturingGroup groupIndex: Int) -> NSRange {
+            return self.result.range(at: groupIndex)
+        }
+        
+        public func enumerateCapturingGroups(block: (Int, NSRange, String) -> Void) {
+            (0..<self.numberOfCapturingGroups).forEach { index in
+                block(index, self.range(ofCapturingGroup: index), self.contents(ofCapturingGroup: index))
+            }
+        }
     }
 
 
     public let regex: NSRegularExpression
+    
 
     /// Create a new RegEx from a pattern and some options
     ///
     /// - Parameters:
     ///   - pattern: The regular expression's pattern
     ///   - options: Some options
-    public init(_ pattern: String, options: RegEx.Options = []) {
-        self.regex = try! NSRegularExpression(pattern: pattern, options: options)
+    public init(_ pattern: String, options: RegEx.Options = []) throws {
+        self.regex = try NSRegularExpression(pattern: pattern, options: options)
     }
 
     /// Create a new RegEx object from a NSRegularExpression objecr
@@ -121,8 +135,8 @@ public struct RegEx {
     ///   - options: Matching options
     /// - Returns: An array of matches
     public func matches(in string: String) -> [RegEx.Result] {
-        return self.regex.matches(in: string, options: [], range: string.range).map { result in
-            return RegEx.Result(result: result, initialString: string)
+        return self.regex.matches(in: string, options: [], range: string.range).enumerated().map {
+            return RegEx.Result(result: $1, initialString: string, index: $0)
         }
     }
     
@@ -203,7 +217,7 @@ extension RegEx : ExpressibleByStringLiteral {
     ///
     /// - Parameter value: A string literal containing the (escaped) pattern of the regular expression
     public init(stringLiteral value: String) {
-        self.init(value)
+        try! self.init(value)
     }
 }
 
@@ -216,7 +230,7 @@ public struct Playground {
 }
 
 extension RegEx {
-    public init(line: Int = #line, column: Int = #column) {
+    public init(line: Int = #line, column: Int = #column) throws {
         let path = Playground.directory + "/Pages/" + Playground.currentPage + ".xcplaygroundpage/Contents.swift"
 
         let data = FileManager.default.contents(atPath: path)!
@@ -231,6 +245,6 @@ extension RegEx {
         scanner.scanUpTo("*/", into: &dest)
 
         //value = dest! as String
-        self.init(dest! as String)
+        try self.init(dest! as String)
     }
 }

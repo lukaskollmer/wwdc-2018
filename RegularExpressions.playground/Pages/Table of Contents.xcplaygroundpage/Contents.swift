@@ -1,26 +1,26 @@
 /*:
  # Regular Expressions
- 
+
  By [Lukas Kollmer][Lukas Kollmer] • Spring 2018
- 
+
  ## Table of Contents
  - [Introduction](Introduction)
  - [Capturing Groups](Capturing%20Groups)
  - [Character Sets](Character%20Sets)
  - todo
- 
+
  ## Meta
  - This playground was developed and tested with Xcode 9.2 (Swift 4.0.3) TODO UPDATE
  - The `RegEx` class uses in this playground is a light wrapper around [`NSRegularExpression`][NSRegularExpression] and its related APIs, to make working with regular expressions in swift easier
- 
- > Since Swift doesn't support raw string literals (string literals where escape characters are not processed), this playground uses a little hack to keep regular expressions simple and easy to read.
+
+ > Since Swift doesn't support unescaped string literals, this playground uses a little hack to keep regular expressions simple and easy to read.
  > The `RegEx` class has two initializers
  - `init(_ pattern: String, options: RegEx.Options = [])` takes a string, in which backslashes need to be escaped)
  - `init(line: Int = #line, column: Int = #column)` this initializer expects a comment between its parenteses. it reads the source code of the calling file and extracts the contents of that comment, which will be used as the regex's pattern. the obvious advantage of this approach is that you don't need to escape any characters in the pattern and can for example write `\w` instead of `\\w`. This makes it a lot easier to understand the patterns, especially for beginners
- 
+
  [Lukas Kollmer]:       https://lukaskollmer.github.io
  [NSRegularExpression]: https://developer.apple.com/documentation/foundation/nsregularexpression
- 
+
  [Next page](@next)
 */
 
@@ -29,7 +29,7 @@ import Foundation
 // TODO if we require the playground be run from desktop, we can get the current username at runtime and get rid of this one
 Playground.currentPage = "Table of Contents"
 
-let regeximg = RegEx(/*(\d+)x(\d+)*/)
+let regeximg = try! RegEx(/*(\d+)x(\d+)*/)
 regeximg.matches(in: "44x55, 10x12").forEach { print($0) }
 
 /*
@@ -41,7 +41,7 @@ postfix func ...=><T: Collection>(lhs: T) {
 
 /*****     EXAMPLES     *****/
 
- 
+
  // extract price from text
 let priceRegex = RegEx(/*Price: \$(\d+)*/)
 priceRegex.matches(in: "Price: $12").first!.contents(ofCapturingGroup: 1)
@@ -112,14 +112,14 @@ let extractNameAndNumberRegex = RegEx("^((?:\\S+\\s+){1}\\S+).* (\\d+)")
 
 let combinations: [(Int, String)] = sentences.map { s -> (Int, String) in
     let match = extractNameAndNumberRegex.matches(in: s)[0]
-    
+
     let name = match.contents(ofCapturingGroup: 1)
     let number = Int(match.contents(ofCapturingGroup: 2))!
-    
+
     // old code that uses a separate regex to extract the number
     //let name = extractNameRegex.matches(in: s)[0].contents(ofCapturingGroup: 1)
     //let number = Int("\\d+"/.matches(in: s)[0].string)!
-    
+
     return (number, name)
     }.sorted { $0.0 < $1.0 }
 
@@ -130,4 +130,3 @@ combinations...=>
 
 
 */
-

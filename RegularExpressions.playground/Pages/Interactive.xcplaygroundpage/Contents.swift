@@ -361,13 +361,18 @@ class LKVisualRegExViewController: NSViewController {
         
         // TODO maybe show some UI to select which optinons should be enabled?
         // TODO are there any other obvious options we should enable for this UI?
-        guard let regex = try? RegEx(self.regexTextField.stringValue, options: [.anchorsMatchLines]) else {
+        let regex: RegEx
+        do {
+            regex = try RegEx(self.regexTextField.stringValue, options: [.anchorsMatchLines])
+        } catch {
             keepCompilationErrorImageViewVisible()
             regexCompilationErrorImageView.isHidden = false
+            regexCompilationErrorImageView.toolTip = "Error compiling regular expression: \(error.localizedDescription)"
             return
         }
         
         regexCompilationErrorImageView.isHidden = true
+        regexCompilationErrorImageView.toolTip = nil
         
         let tv = self.regexTestStringTextView
         let sv = self.regexTestStringTextViewContainingScrollView

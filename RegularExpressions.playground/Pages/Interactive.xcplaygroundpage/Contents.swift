@@ -3,7 +3,9 @@
 import AppKit
 import PlaygroundSupport
 
-print("HEY")
+// It's important we register this as early as possible since playgrounds don't properly
+// print error messages for uncaught objc exceptions (rdar://38576713)
+NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
 
 
 /*

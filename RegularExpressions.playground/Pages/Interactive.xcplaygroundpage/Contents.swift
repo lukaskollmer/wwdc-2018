@@ -24,6 +24,7 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
 
 /*
  TODO: when clicking the regex text field for the first time, the cursor goes to the beginning of the text field for a fraction of a second, before going to the end of the text field. would be nice if we could fix that
+ // TODO have altrnating colors to differentiate between matches that are directly following each other
  
  // IDEA make a regex to filter all swift files in a list of filenames
  */
@@ -84,7 +85,7 @@ class LKFocusAwareTextField: NSTextField {
     
     override func becomeFirstResponder() -> Bool {
         let retval = super.becomeFirstResponder()
-        self.didBecomeFirstResponderAction?()
+        if retval { self.didBecomeFirstResponderAction?() }
         return retval
     }
 }
@@ -217,10 +218,6 @@ class LKVisualRegExViewController: NSViewController {
             (regexTestStringTextViewContainingScrollView, defaultSpacing)
         ]
         
-        //for (index, element) in layout.suffix(from: 1).enumerated() {
-        //    element.view.topToBottom(of: layout[index].view, offset: element.offset)
-        //    element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
-        //}
         
         layout.suffix(from: 1).enumerated().forEach { (index: Int, element: (view: NSView, offset: CGFloat)) in
             element.view.topToBottom(of: layout[index].view, offset: element.offset)

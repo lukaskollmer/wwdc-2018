@@ -465,17 +465,17 @@ class LKMatchInfoViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let table = TextTable(numberOfColumns: 3)
         
-        var captureGroupInfo_ = [String]()
         match.enumerateCapturingGroups { index, range, content in
-            captureGroupInfo_.append("\(index): range=\(range) content='\(content)'")
+            table.addRow(values: "#\(index)", "range: \(range)", "content: '\(content)'")
         }
         
         let content = """
         Match: #\(match.index)
         Range: \(match.range) '\(match.initialString.substring(withRange: match.range))'
         Capture Groups:
-        \(captureGroupInfo_.joined(separator: "\n"))
+        \(table.stringValue)
         """
         
         let label = NSTextField(labelWithString: content)
@@ -489,6 +489,39 @@ class LKMatchInfoViewController: NSViewController {
 
 
 
+/// Simple string table generator. Used when displaying match infos
+class TextTable {
+    let numberOfColumns: Int
+    
+    init(numberOfColumns: Int) {
+        self.numberOfColumns = numberOfColumns
+    }
+    
+    private var rows = [[String]]()
+    
+    func addRow(values: String...) {
+        precondition(values.count == numberOfColumns, "Attempted to add a row with the wrong numbe of columns (got \(values.count), expected \(numberOfColumns))")
+        
+        rows.append(values)
+    }
+    
+    
+    var stringValue: String {
+        var rowStrings = [String](repeating: "", count: rows.count)
+        
+        (0..<numberOfColumns).forEach { column in
+            let columnValues = rows.map { $0[column] }
+            let maxLength = columnValues.reduce(0, { max($0, $1.count) })
+            
+            columnValues.enumerated().forEach { index, columnValue in
+                rowStrings[index] += columnValue.padding(toLength: maxLength + 1, withPad: " ", startingAt: 0)
+            }
+        }
+        
+        return rowStrings.joined(separator: "\n")
+    }
+    
+}
 
 
 struct Defaults {

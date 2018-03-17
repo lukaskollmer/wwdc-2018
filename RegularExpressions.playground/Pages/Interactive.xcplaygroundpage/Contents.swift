@@ -140,6 +140,10 @@ class LKVisualRegExViewController: NSViewController {
     let regexTestStringTextViewContainingScrollView = NSScrollView()
     let regexTestStringTextView = NSTextView()
     
+    // Social Row
+    let leftSocialButton  = NSButton(title: "lukaskollmer.me", target: nil, action: nil)
+    let rightSocialButton = NSButton(title: "github.com/lukaskollmer", target: nil, action: nil)
+    
     init() {
         super.init(nibName: nil, bundle: nil)
     }
@@ -194,7 +198,8 @@ class LKVisualRegExViewController: NSViewController {
             regexTextFieldTitleLabel,
             regexTextField,
             regexTestStringTextViewTitleLabel,
-            regexTestStringTextViewContainingScrollView
+            regexTestStringTextViewContainingScrollView,
+            leftSocialButton, rightSocialButton
         ].forEach(self.view.addSubview)
         
         //
@@ -227,8 +232,29 @@ class LKVisualRegExViewController: NSViewController {
             element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
         }
         
-        regexTestStringTextViewContainingScrollView.bottomToSuperview(offset: -defaultOffset)
-     
+        
+        
+        [leftSocialButton, rightSocialButton].forEach {
+            $0.target = self
+            $0.action = #selector(didPressSocialButton(_:))
+            
+            $0.isBordered = false
+            
+            let title = NSMutableAttributedString(string: $0.title)
+            let attributes: [NSAttributedStringKey: Any] = [
+                .foregroundColor: NSColor.darkGray,
+                .font: $0.font?.with(size: 12)
+            ]
+            title.setAttributes(attributes, range: NSRange(location: 0, length: title.length))
+            $0.attributedTitle = title
+            $0.height(20)
+            
+            $0.bottomToSuperview(offset: -defaultSpacing / 2)
+            $0.topToBottom(of: regexTestStringTextViewContainingScrollView, offset: defaultSpacing / 2)
+        }
+        
+        leftSocialButton.leftToSuperview(offset: defaultOffset)
+        rightSocialButton.rightToSuperview(offset: defaultOffset)
         
         
         // Setup the regex compilation error indicator
@@ -279,7 +305,11 @@ class LKVisualRegExViewController: NSViewController {
         textView.textContainer?.widthTracksTextView = true
         
         scrollView.documentView = textView
-        
+    }
+    
+    @objc private func didPressSocialButton(_ sender: NSButton) {
+        let url = URL(string: "https://" + sender.title)!
+        NSWorkspace.shared.open(url)
     }
     
     

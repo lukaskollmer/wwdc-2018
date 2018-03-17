@@ -3,8 +3,8 @@
 import AppKit
 import PlaygroundSupport
 
-// It's important we register this as early as possible since playgrounds don't properly
-// print error messages for uncaught objc exceptions (rdar://38576713)
+// It's important we register this as early as possible
+// Why? playgrounds don't properly print error messages for uncaught objc exceptions (rdar://38576713)
 NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
 
 
@@ -24,6 +24,7 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  - have altrnating colors to differentiate between matches that are directly following each other
  - add a (i) button to the top right corner that shows some sort or info/about window explaining how this works / what it can do
  - it seems like the left social button isn't quite on the same line as the border of the text view // FIXME
+ - the options ui should not hide the text view, that'd would make it easier to see how changing the options will influence the matches
  
  IDEAS:
  - make a regex to filter all swift files in a list of filenames
@@ -134,7 +135,8 @@ private class LKMatchHighlightView: NSView {
 
 
 /// View Controller to visualize a regular expression and its matches in some test input
-class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSTextViewDelegate {
+class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSTextViewDelegate, NSPopoverDelegate {
+    
     // Title Bar
     private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
     private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer") // TODO make this a link?
@@ -150,6 +152,8 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
     private let regexTestStringTextViewContainingScrollView = NSScrollView()
     private let regexTestStringTextView = NSTextView()
     
+    // Settings
+    private let regexOptionsButton = NSButton(title: "RegEx Options", target: nil, action: nil)
     
     // Social Row
     private let leftSocialButton  = NSButton(title: "lukaskollmer.me", target: nil, action: nil)
@@ -241,6 +245,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
             regexTextField,
             regexTestStringTextViewTitleLabel,
             regexTestStringTextViewContainingScrollView,
+            regexOptionsButton,
             leftSocialButton, rightSocialButton
         ].forEach(self.view.addSubview)
         
@@ -274,6 +279,11 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
             element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
         }
         
+        // Settings
+        regexOptionsButton.topToBottom(of: regexTextField, offset: 6)
+        regexOptionsButton.rightToSuperview(offset: defaultOffset)
+        regexOptionsButton.target = self
+        regexOptionsButton.action = #selector(showOptions(_:))
         
         // Setup the social row
         
@@ -407,6 +417,23 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         updateMatches()
     }
     
+    var optionsPopover: NSPopover?
+    
+    @objc private func showOptions(_ sender: NSButton) {
+        
+        if let popover = optionsPopover {
+            popover.performClose(sender)
+            optionsPopover = nil
+            return
+        }
+        
+        optionsPopover = NSPopover()
+        optionsPopover?.contentViewController = LKOptionsViewController(changeHandler: self.updateMatches)
+        optionsPopover?.behavior = .transient
+        optionsPopover?.show(relativeTo: sender.bounds, of: sender, preferredEdge: .maxY)
+        optionsPopover?.delegate = self
+    }
+    
     
     // MARK: Regex Matching
     
@@ -419,7 +446,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         // TODO are there any other obvious options we should enable for this UI?
         let regex: RegEx
         do {
-            regex = try RegEx(self.regexTextField.stringValue, options: [.anchorsMatchLines])
+            regex = try RegEx(self.regexTextField.stringValue, options: Defaults.regexOptions)
         } catch {
             keepCompilationErrorImageViewVisible()
             regexCompilationErrorImageView.isHidden = false
@@ -476,6 +503,14 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
             .filter { $0.kind == .capturingGroup }
             .forEach(addViews)
     }
+    
+    
+    // MARK: NSPopoverDelegate
+    func popoverDidClose(_ notification: Notification) {
+        if let popover = notification.object as? NSPopover, popover == optionsPopover {
+            optionsPopover = nil
+        }
+    }
 }
 
 
@@ -528,6 +563,131 @@ private class LKMatchInfoViewController: NSViewController {
 }
 
 
+class LKOptionsViewController: NSViewController {
+    
+    let changeHandler: () -> Void
+    
+    init(changeHandler: @escaping () -> Void) {
+        self.changeHandler = changeHandler
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) { fatalError() }
+    
+    override func loadView() {
+        self.view = NSView(frame: NSRect.init(x: 0, y: 0, width: 400, height: 0))
+        
+        let container = NSView()
+        view.addSubview(container)
+        
+        container.edgesToSuperview(insets: NSEdgeInsets(top: 8, left: 8, bottom: 8, right: -8))
+        
+        
+        let buttons: [NSButton] = NSRegularExpression.Options.all.map { option in
+            let button = NSButton()
+            button.setButtonType(.switch)
+            button.attributedTitle = option.fancyDescription
+            button.target = self
+            button.action = #selector(optionsChanged(_:))
+            button.tag = Int(option.rawValue)
+            return button
+        }
+        
+        buttons.forEach(container.addSubview)
+        container.stack(buttons, axis: .vertical, spacing: 12.5)
+        
+        // For some reason the first button is a couple of pixels out of view
+        // We correct this by fixing its size to 30 points (fun fact: the button's size is 30pt anyway
+        // but explicitly telling AppKit to render it w/ 30 points height seems to fix the bug
+        buttons.first!.height(30)
+    }
+    
+    @objc private func optionsChanged(_ sender: NSButton) {
+        let option = NSRegularExpression.Options(rawValue: UInt(sender.tag))
+        
+        if sender.state == .on {
+            Defaults.regexOptions.insert(option)
+        } else {
+            Defaults.regexOptions.remove(option)
+        }
+        
+        changeHandler()
+    }
+}
+
+extension NSRegularExpression.Options {
+    static let all: [NSRegularExpression.Options] = [
+        .caseInsensitive,
+        .allowCommentsAndWhitespace,
+        .ignoreMetacharacters,
+        .dotMatchesLineSeparators,
+        .anchorsMatchLines,
+        .useUnixLineSeparators,
+        .useUnicodeWordBoundaries
+    ]
+    
+    var fancyDescription: NSAttributedString {
+        switch self {
+        case .caseInsensitive:
+            return makeAttributedString(
+                title: "Case-insensitive",
+                subtitle: "Match letters in the pattern independent of case"
+            )
+        case .allowCommentsAndWhitespace:
+            return makeAttributedString(
+                title: "Allow comments and whitespace",
+                subtitle: "Ignore whitespace and #-prefixed comments in the pattern"
+            )
+        case .ignoreMetacharacters:
+            return makeAttributedString(
+                title: "Ignore metacharacters",
+                subtitle: "Treat the entire pattern as a literal string"
+            )
+        case .dotMatchesLineSeparators:
+            return makeAttributedString(
+                title: "Dot matches line separators",
+                subtitle: "Allow . to match any character, including line separators"
+            )
+        case .anchorsMatchLines:
+            return makeAttributedString(
+                title: "Anchors match lines",
+                subtitle: "Allow ^ and $ to match the start and end of lines"
+            )
+        case .useUnixLineSeparators:
+            return makeAttributedString(
+                title: "Use unix line separators",
+                subtitle: "Treat only \\n as a line separator"
+            )
+        case .useUnicodeWordBoundaries:
+            return makeAttributedString(
+                title: "Use unicode word boundaries",
+                subtitle: "Use Unicode TR#29 to specify word boundaries"
+            )
+        default:
+            // should never reach here
+            fatalError()
+        }
+    }
+    
+    private func makeAttributedString(title: String, subtitle: String) -> NSAttributedString {
+        let string = NSMutableAttributedString()
+        
+        
+        let attributedTitle = NSAttributedString(string: title)
+        let attributedSubtitle = NSAttributedString(string: subtitle, attributes: [
+            .foregroundColor: NSColor.darkGray
+        ])
+        
+        string.append(attributedTitle)
+        string.append(NSAttributedString(string: "\n"))
+        string.append(attributedSubtitle)
+        
+        
+        return string.copy() as! NSAttributedString // TODO is that copy immutable?
+        //return NSAttributedString(attributedString: string)
+    }
+}
+
 
 /// Simple string table generator. Used when displaying match infos
 private class TextTable {
@@ -574,6 +734,14 @@ private struct Defaults {
     static var testInput: String {
         get { return defaults.string(forKey: #function) ?? "" }
         set { defaults.set(newValue, forKey: #function) }
+    }
+    
+    static var regexOptions: NSRegularExpression.Options {
+        get {
+            let rawValue = defaults.integer(forKey: #function)
+            return NSRegularExpression.Options(rawValue: UInt(rawValue))
+        }
+        set { defaults.set(newValue.rawValue, forKey: #function) }
     }
 }
 

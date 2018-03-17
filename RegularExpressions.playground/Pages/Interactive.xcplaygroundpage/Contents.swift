@@ -15,7 +15,9 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  
  
  Notes:
- - For performance reasons
+ - For performance reasons, we always use `Collection.forEach(:_)` instead of `for in` loops
+   Why? Xcode visualizes `for in` loops, either by counting the number of iterations or by actually logging all objects.
+   This slows down the execution quite dramatically (rdar://38576884)
  
  
  */

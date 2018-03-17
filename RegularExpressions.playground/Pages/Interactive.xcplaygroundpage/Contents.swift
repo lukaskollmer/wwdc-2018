@@ -22,6 +22,7 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  TODO
  - when clicking the regex text field for the first time, the cursor goes to the beginning of the text field for a fraction of a second, before going to the end of the text field. would be nice if we could fix that
  - have altrnating colors to differentiate between matches that are directly following each other
+ - add a (i) button to the top right corner that shows some sort or info/about window explaining how this works / what it can do
  
  IDEAS:
  - make a regex to filter all swift files in a list of filenames
@@ -252,7 +253,6 @@ class LKVisualRegExViewController: NSViewController {
         }
     }
     
-    
     private func setupTextView() {
         // TODO for whatever reason, the scroll bar does not appear. (probably bc auto layout)
         
@@ -372,52 +372,48 @@ class LKVisualRegExViewController: NSViewController {
         let tv = self.regexTestStringTextView
         let sv = self.regexTestStringTextViewContainingScrollView
         
-        measure("process matches") {
-            regex.matches(in: tv.string).forEach { match in
-                // TODO can we safely force-unwrap the text container?
-                
-                match.enumerateCapturingGroups { index, range, content in
-                    tv.layoutManager?.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: tv.textContainer!) { rect, stop in
-                        
-                        let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .capturingGroup
-                        
-                        
-                        let color = { () -> NSColor in
-                            switch kind {
-                            case .fullMatch: return .fullMatchLightGreen
-                            case .capturingGroup: return .captureGroupBlue
-                            }
-                        }()
-                        
-                        let highlightView = LKMatchHighlightView(match: match, frame: rect, color: color, kind: kind)
-                        self.highlightViews.append(highlightView)
-                    }
+        
+        regex.matches(in: tv.string).forEach { match in
+            // TODO can we safely force-unwrap the text container?
+            
+            match.enumerateCapturingGroups { index, range, content in
+                tv.layoutManager?.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: tv.textContainer!) { rect, stop in
+                    
+                    let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .capturingGroup
+                    
+                    
+                    let color = { () -> NSColor in
+                        switch kind {
+                        case .fullMatch: return .fullMatchLightGreen
+                        case .capturingGroup: return .captureGroupBlue
+                        }
+                    }()
+                    
+                    let highlightView = LKMatchHighlightView(match: match, frame: rect, color: color, kind: kind)
+                    self.highlightViews.append(highlightView)
                 }
-                
             }
+            
         }
         
-        measure("insert views") {
-            
-            // Add the highlight views to the scroll view's view hierarchy
-            // This is split up in two parts:
-            // We first add all highlight views for full matches, and then all highlight views for capture groups
-            // This ensures that the highlight views for capture groups are on top of the highlight views for full
-            // matches and we don't have to manually rearrange the view hierarchy
-            
-            let addViews = { (view: NSView) -> Void in
-                // the scroll view's only subview is a NSClipView, which has at least 3 subviews, the last of which is the text view
-                sv.subviews.first!.addSubview(view, positioned: .below, relativeTo: tv)
-            }
-            
-            highlightViews
-                .filter { $0.kind == .fullMatch }
-                .forEach(addViews)
-            
-            highlightViews
-                .filter { $0.kind == .capturingGroup }
-                .forEach(addViews)
+        // Add the highlight views to the scroll view's view hierarchy
+        // This is split up in two parts:
+        // We first add all highlight views for full matches, and then all highlight views for capture groups
+        // This ensures that the highlight views for capture groups are on top of the highlight views for full
+        // matches and we don't have to manually rearrange the view hierarchy
+        
+        let addViews = { (view: NSView) -> Void in
+            // the scroll view's only subview is a NSClipView, which has at least 3 subviews, the last of which is the text view
+            sv.subviews.first!.addSubview(view, positioned: .below, relativeTo: tv)
         }
+        
+        highlightViews
+            .filter { $0.kind == .fullMatch }
+            .forEach(addViews)
+        
+        highlightViews
+            .filter { $0.kind == .capturingGroup }
+            .forEach(addViews)
     }
     
     var highlightViews = [LKMatchHighlightView]()

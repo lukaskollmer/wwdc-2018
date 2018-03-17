@@ -19,14 +19,12 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
    Why? Xcode visualizes `for in` loops, either by counting the number of iterations or by actually logging all objects.
    This slows down the execution quite dramatically (rdar://38576884)
  
+ TODO
+ - when clicking the regex text field for the first time, the cursor goes to the beginning of the text field for a fraction of a second, before going to the end of the text field. would be nice if we could fix that
+ - have altrnating colors to differentiate between matches that are directly following each other
  
- */
-
-/*
- TODO: when clicking the regex text field for the first time, the cursor goes to the beginning of the text field for a fraction of a second, before going to the end of the text field. would be nice if we could fix that
- // TODO have altrnating colors to differentiate between matches that are directly following each other
- 
- // IDEA make a regex to filter all swift files in a list of filenames
+ IDEAS:
+ - make a regex to filter all swift files in a list of filenames
  */
 
 extension NSFont {
@@ -341,7 +339,6 @@ class LKVisualRegExViewController: NSViewController {
     }
     
     private func keepCompilationErrorImageViewVisible() {
-        print(regexTextField.subviews)
         regexTextField.sortSubviews({ a, b, _ -> ComparisonResult in
             if a is NSImageView {
                 return ComparisonResult.orderedDescending
@@ -349,12 +346,10 @@ class LKVisualRegExViewController: NSViewController {
                 return ComparisonResult.orderedAscending
             }
         }, context: nil)
-        print(regexTextField.subviews)
     }
     
     
     private func updateMatches() {
-        
         
         self.highlightViews.forEach { $0.removeFromSuperview() }
         self.highlightViews.removeAll()

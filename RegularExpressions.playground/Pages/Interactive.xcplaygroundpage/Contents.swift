@@ -44,6 +44,11 @@ extension NSEdgeInsets {
     }
 }
 
+extension NSColor {
+    static let fullMatchLightGreen = NSColor(hexString: "#CCE7A5")!
+    static let captureGroupBlue = NSColor(hexString: "#85C3FA")!
+}
+
 // https://stackoverflow.com/a/25952895/2513803
 extension NSImage {
     func tinted(withColor tint: NSColor) -> NSImage {
@@ -373,10 +378,11 @@ class LKVisualRegExViewController: NSViewController {
                         
                         let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .capturingGroup
                         
+                        
                         let color = { () -> NSColor in
                             switch kind {
-                            case .fullMatch: return NSColor.init(hexString: "#CCE7A5")!
-                            case .capturingGroup: return NSColor.init(hexString: "#85C3FA")!
+                            case .fullMatch: return .fullMatchLightGreen
+                            case .capturingGroup: return .captureGroupBlue
                             }
                         }()
                         

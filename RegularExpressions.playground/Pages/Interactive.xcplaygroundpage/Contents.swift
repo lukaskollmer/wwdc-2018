@@ -30,31 +30,31 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  */
 
 extension NSFont {
-    func with(size: CGFloat) -> NSFont {
+    fileprivate func with(size: CGFloat) -> NSFont {
         return NSFont(name: self.fontName, size: size)!
     }
     
-    static let menlo = NSFont(name: "Menlo", size: NSFont.systemFontSize)!
+    fileprivate static let menlo = NSFont(name: "Menlo", size: NSFont.systemFontSize)!
 }
 
 extension NSAppearance {
-    static let dark = NSAppearance(named: NSAppearance.Name.vibrantDark)!
+    fileprivate static let dark = NSAppearance(named: NSAppearance.Name.vibrantDark)!
 }
 
 extension NSEdgeInsets {
-    init(allSides value: CGFloat) {
+    fileprivate init(allSides value: CGFloat) {
         self.init(top: value, left: value, bottom: value, right: -value)
     }
 }
 
 extension NSColor {
-    static let fullMatchLightGreen = NSColor(hexString: "#CCE7A5")!
-    static let captureGroupBlue = NSColor(hexString: "#85C3FA")!
+    fileprivate static let fullMatchLightGreen = NSColor(hexString: "#CCE7A5")!
+    fileprivate static let captureGroupBlue = NSColor(hexString: "#85C3FA")!
 }
 
 // https://stackoverflow.com/a/25952895/2513803
 extension NSImage {
-    func tinted(withColor tint: NSColor) -> NSImage {
+    fileprivate func tinted(withColor tint: NSColor) -> NSImage {
         guard let tinted = self.copy() as? NSImage else { return self }
         tinted.lockFocus()
         tint.set()
@@ -68,7 +68,7 @@ extension NSImage {
 }
 
 
-func measure(_ title: String? = nil, _ block: () -> Void) {
+private func measure(_ title: String? = nil, _ block: () -> Void) {
     let start = Date()
     
     block()
@@ -79,7 +79,8 @@ func measure(_ title: String? = nil, _ block: () -> Void) {
 }
 
 
-class LKFocusAwareTextField: NSTextField {
+/// NSTextField subclass that calls a closure every time the text field becomes first responder
+private class LKFocusAwareTextField: NSTextField {
     
     var didBecomeFirstResponderAction: (() -> Void)?
     
@@ -91,10 +92,10 @@ class LKFocusAwareTextField: NSTextField {
 }
 
 
-let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
+private let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
 
 /// NSView subclass to highlight part of a regex match in a text view
-class LKMatchHighlightView: NSView {
+private class LKMatchHighlightView: NSView {
     
     enum Kind {
         case fullMatch
@@ -124,26 +125,66 @@ class LKMatchHighlightView: NSView {
 }
 
 
+
+
+
+
+
+
+
+
 /// View Controller to visualize a regular expression and its matches in some test input
-class LKVisualRegExViewController: NSViewController {
+class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSTextViewDelegate {
     // Title Bar
-    let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
-    let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer") // TODO make this a link?
+    private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
+    private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer") // TODO make this a link?
     
     
     // Regex Text Field
-    let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
-    let regexTextField = LKFocusAwareTextField()
-    let regexCompilationErrorImageView = NSImageView(image: NSImage(named: .invalidDataFreestandingTemplate)!.tinted(withColor: .red))
+    private let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
+    private let regexTextField = LKFocusAwareTextField()
+    private let regexCompilationErrorImageView = NSImageView(image: NSImage(named: .invalidDataFreestandingTemplate)!.tinted(withColor: .red))
     
     // Test String Text View
-    let regexTestStringTextViewTitleLabel = NSTextField(labelWithString: "Test Input")
-    let regexTestStringTextViewContainingScrollView = NSScrollView()
-    let regexTestStringTextView = NSTextView()
+    private let regexTestStringTextViewTitleLabel = NSTextField(labelWithString: "Test Input")
+    private let regexTestStringTextViewContainingScrollView = NSScrollView()
+    private let regexTestStringTextView = NSTextView()
+    
     
     // Social Row
-    let leftSocialButton  = NSButton(title: "lukaskollmer.me", target: nil, action: nil)
-    let rightSocialButton = NSButton(title: "github.com/lukaskollmer", target: nil, action: nil)
+    private let leftSocialButton  = NSButton(title: "lukaskollmer.me", target: nil, action: nil)
+    private let rightSocialButton = NSButton(title: "github.com/lukaskollmer", target: nil, action: nil)
+    
+    // MARK: Match highlighting
+    private var highlightViews = [LKMatchHighlightView]()
+    private var matchInfoPopover: NSPopover?
+    
+    private var currentlyHoveredHighlightView: LKMatchHighlightView? {
+        didSet {
+            // show/hide depending on whether the value is nil
+            guard currentlyHoveredHighlightView != oldValue else { return }
+            
+            if let currentlyHoveredHighlightView = currentlyHoveredHighlightView {
+                // show a new highlight view
+                
+                matchInfoPopover?.performClose(nil)
+                matchInfoPopover = nil
+                
+                let vc = LKMatchInfoViewController(match: currentlyHoveredHighlightView.match)
+                matchInfoPopover = NSPopover()
+                matchInfoPopover?.appearance = .dark
+                matchInfoPopover?.contentViewController = vc
+                matchInfoPopover?.behavior = .semitransient
+                matchInfoPopover?.show(relativeTo: currentlyHoveredHighlightView.bounds, of: currentlyHoveredHighlightView, preferredEdge: .maxY)
+            } else {
+                // remove the last highlight view
+                matchInfoPopover?.performClose(nil)
+                matchInfoPopover = nil
+            }
+        }
+    }
+    
+    // MARK: View Controller lifecycle
     
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -234,6 +275,7 @@ class LKVisualRegExViewController: NSViewController {
         }
         
         
+        // Setup the social row
         
         [leftSocialButton, rightSocialButton].forEach {
             $0.target = self
@@ -280,6 +322,19 @@ class LKVisualRegExViewController: NSViewController {
         }
     }
     
+    override func viewWillAppear() {
+        super.viewWillAppear()
+        
+        // We have to manually start the initial regex matching
+        updateMatches()
+        
+        // Adding the tracking area to `self.view` instead of the text view means that we also get hover events when the text view isn't first responder
+        let trackingArea = NSTrackingArea(rect: self.view.frame, options: [.mouseMoved, .activeAlways], owner: self, userInfo: nil)
+        self.view.addTrackingArea(trackingArea)
+    }
+    
+    // MARK: UI
+    
     private func setupTextView() {
         // TODO for whatever reason, the scroll bar does not appear. (probably bc auto layout)
         
@@ -308,50 +363,21 @@ class LKVisualRegExViewController: NSViewController {
         scrollView.documentView = textView
     }
     
+    private func keepCompilationErrorImageViewVisible() {
+        regexTextField.sortSubviews({ a, b, _ -> ComparisonResult in
+            if a is NSImageView {
+                return ComparisonResult.orderedDescending
+            } else {
+                return ComparisonResult.orderedAscending
+            }
+        }, context: nil)
+    }
+    
+    // MARK: Event handling (social buttons, mouse hover, NSText{Field|View}Delegate
+    
     @objc private func didPressSocialButton(_ sender: NSButton) {
         let url = URL(string: "https://" + sender.title)!
         NSWorkspace.shared.open(url)
-    }
-    
-    
-    override func viewWillAppear() {
-        super.viewWillAppear()
-        
-        // The delegates don't get called when the text is changed programmatically // TODO how the fuck is that spelled
-        updateMatches()
-        
-        
-        
-        // Addinf the tracking area to `self.view` instead of the text view means that we also get hover events when the text view isn't first responder
-        let trackingArea = NSTrackingArea(rect: self.view.frame, options: [.mouseMoved, .activeAlways], owner: self, userInfo: nil)
-        self.view.addTrackingArea(trackingArea)
-    }
-    
-    var matchInfoPopover: NSPopover?
-    
-    var currentlyHoveredHighlightView: LKMatchHighlightView? {
-        didSet {
-            // show/hide depending on whether the value is nil
-            guard currentlyHoveredHighlightView != oldValue else { return }
-            
-            if let currentlyHoveredHighlightView = currentlyHoveredHighlightView {
-                // show a new highlight view
-                
-                matchInfoPopover?.performClose(nil)
-                matchInfoPopover = nil
-                
-                let vc = LKMatchInfoViewController(match: currentlyHoveredHighlightView.match)
-                matchInfoPopover = NSPopover()
-                matchInfoPopover?.appearance = .dark
-                matchInfoPopover?.contentViewController = vc
-                matchInfoPopover?.behavior = .semitransient
-                matchInfoPopover?.show(relativeTo: currentlyHoveredHighlightView.bounds, of: currentlyHoveredHighlightView, preferredEdge: .maxY)
-            } else {
-                // remove the last highlight view
-                matchInfoPopover?.performClose(nil)
-                matchInfoPopover = nil
-            }
-        }
     }
     
     override func mouseMoved(with event: NSEvent) {
@@ -369,16 +395,20 @@ class LKVisualRegExViewController: NSViewController {
         }
     }
     
-    private func keepCompilationErrorImageViewVisible() {
-        regexTextField.sortSubviews({ a, b, _ -> ComparisonResult in
-            if a is NSImageView {
-                return ComparisonResult.orderedDescending
-            } else {
-                return ComparisonResult.orderedAscending
-            }
-        }, context: nil)
+    override func controlTextDidChange(_ notification: Notification) {
+        guard notification.object as? NSTextField == self.regexTextField else { return }
+        Defaults.regex = regexTextField.stringValue
+        updateMatches()
     }
     
+    func textDidChange(_ notification: Notification) {
+        guard notification.object as? NSTextView == self.regexTestStringTextView else { return }
+        Defaults.testInput = regexTestStringTextView.string
+        updateMatches()
+    }
+    
+    
+    // MARK: Regex Matching
     
     private func updateMatches() {
         
@@ -446,37 +476,17 @@ class LKVisualRegExViewController: NSViewController {
             .filter { $0.kind == .capturingGroup }
             .forEach(addViews)
     }
-    
-    var highlightViews = [LKMatchHighlightView]()
-    
-}
-
-
-extension LKVisualRegExViewController: NSTextFieldDelegate, NSTextViewDelegate {
-    
-    
-    override func controlTextDidChange(_ notification: Notification) {
-        guard notification.object as? NSTextField == self.regexTextField else { return }
-        Defaults.regex = regexTextField.stringValue
-        updateMatches()
-    }
-    
-    func textDidChange(_ notification: Notification) {
-        guard notification.object as? NSTextView == self.regexTestStringTextView else { return }
-        Defaults.testInput = regexTestStringTextView.string
-        updateMatches()
-    }
 }
 
 
 extension String {
-    func substring(withRange range: NSRange) -> String {
-        return NSString.init(string: self).substring(with: range)
+    fileprivate func substring(withRange range: NSRange) -> String {
+        return NSString(string: self).substring(with: range)
     }
 }
 
 
-class LKMatchInfoViewController: NSViewController {
+private class LKMatchInfoViewController: NSViewController {
     
     let match: RegEx.Result
     
@@ -520,7 +530,7 @@ class LKMatchInfoViewController: NSViewController {
 
 
 /// Simple string table generator. Used when displaying match infos
-class TextTable {
+private class TextTable {
     let numberOfColumns: Int
     
     init(numberOfColumns: Int) {
@@ -554,7 +564,7 @@ class TextTable {
 }
 
 
-struct Defaults {
+private struct Defaults {
     private static let defaults = UserDefaults(suiteName: "me.lukaskollmer.playground.visualregex")! // TODO can we safely unwrap this?
     static var regex: String {
         get { return defaults.string(forKey: #function) ?? "" }

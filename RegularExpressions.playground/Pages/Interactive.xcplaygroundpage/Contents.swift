@@ -30,7 +30,7 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  */
 
 extension NSFont {
-    func withSize(_ size: CGFloat) -> NSFont {
+    func with(size: CGFloat) -> NSFont {
         return NSFont(name: self.fontName, size: size)!
     }
     
@@ -93,13 +93,7 @@ class LKFocusAwareTextField: NSTextField {
 
 let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
 
-// NSView subclass w/ the *correct* coordinate system. UIKit ftw
-class LKView: NSView {
-    override var isFlipped: Bool {
-        return true
-    }
-}
-
+/// NSView subclass to highlight part of a regex match in a text view
 class LKMatchHighlightView: NSView {
     
     enum Kind {
@@ -130,6 +124,7 @@ class LKMatchHighlightView: NSView {
 }
 
 
+/// View Controller to visualize a regular expression and its matches in some test input
 class LKVisualRegExViewController: NSViewController {
     // Title Bar
     let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
@@ -168,19 +163,28 @@ class LKVisualRegExViewController: NSViewController {
         titleLabel.alignment = .center
         
         // Subtitle
-        subtitleLabel.font = NSFont.systemFont(ofSize: 15, weight: NSFont.Weight.light)
+        subtitleLabel.font = NSFont.systemFont(ofSize: 15, weight: .light)
         subtitleLabel.alignment = .center
         
         // Regex Entry
-        regexTextField.font = NSFont.menlo.withSize(14)
+        regexTextField.font = NSFont.menlo.with(size: 15)
         regexTextField.placeholderString = "Enter regex here..."
         
         // Test String Entry
-        regexTestStringTextView.font = NSFont.menlo.withSize(17)
+        regexTestStringTextView.font = NSFont.menlo.with(size: 15)
         regexTestStringTextView.isRichText = false
         regexTestStringTextView.backgroundColor = NSColor.clear.withAlphaComponent(0)
         regexTestStringTextView.drawsBackground = true
         regexTestStringTextViewContainingScrollView.backgroundColor = .clear
+        
+        
+        // Regex / test string title labels
+        [self.regexTextFieldTitleLabel, self.regexTestStringTextViewTitleLabel].forEach {
+            $0.font = NSFont.systemFont(ofSize: 13.5, weight: NSFont.Weight.medium)
+        }
+        
+        // TODO not sure whether we should actually give the text view a background color
+        //regexTestStringTextViewContainingScrollView.backgroundColor = NSColor.lightGray.withAlphaComponent(0.05)
         
         setupTextView()
         
@@ -260,7 +264,7 @@ class LKVisualRegExViewController: NSViewController {
         let scrollView = self.regexTestStringTextViewContainingScrollView
         let contentSize = scrollView.contentSize
         
-        scrollView.borderType = .noBorder
+        scrollView.borderType = .bezelBorder
         scrollView.hasVerticalRuler = true
         scrollView.hasHorizontalRuler = false
         scrollView.autoresizingMask = [.width, .height]

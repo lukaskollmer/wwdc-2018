@@ -23,5 +23,13 @@
 ## TODO?
 - include full ToC at the top of each page?
 
+## Technologies used in this playground
+- AppKit
+- AutoLayout
+- NSRegularExpression (+ NSTextCheckingResult)
+- NSLayoutManager
+- PlaygroundSupport live view
+- NSUserDefaults
+
 ## License
 MIT @ [Lukas Kollmer](https://lukaskollmer.me)

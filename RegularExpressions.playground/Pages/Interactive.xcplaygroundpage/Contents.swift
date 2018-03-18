@@ -71,6 +71,14 @@ extension NSImage {
     }
 }
 
+extension NSTextView {
+    @available(*, deprecated, message: "thefuck you're doing?")
+    var lk_placeholderString: String? {
+        get { return self.perform(NSSelectorFromString("placeholderString")).takeUnretainedValue() as? String }
+        set { self.perform(NSSelectorFromString("setPlaceholderString:"), with: newValue) }
+    }
+}
+
 
 private func measure(_ title: String? = nil, _ block: () -> Void) {
     let start = Date()
@@ -80,19 +88,6 @@ private func measure(_ title: String? = nil, _ block: () -> Void) {
     let end = Date()
     let msg = title != nil ? " \(title!)" : ""
     print("[⏱]\(msg) \(end.timeIntervalSince(start))")
-}
-
-
-/// NSTextField subclass that calls a closure every time the text field becomes first responder
-private class LKFocusAwareTextField: NSTextField {
-    
-    var didBecomeFirstResponderAction: (() -> Void)?
-    
-    override func becomeFirstResponder() -> Bool {
-        let retval = super.becomeFirstResponder()
-        if retval { self.didBecomeFirstResponderAction?() }
-        return retval
-    }
 }
 
 
@@ -129,16 +124,34 @@ private class LKMatchHighlightView: NSView {
 }
 
 
+// Subclasses of NSScrollView and NSTextView to implement an auto-expanding multiline text view
 
+class LKScrollView: NSScrollView {
+    override var intrinsicContentSize: NSSize {
+        guard
+            let textView = self.documentView as? NSTextView,
+            let layoutManager = textView.layoutManager
+        else { return .zero }
+        
+        layoutManager.ensureLayout(for: textView.textContainer!)
+        return layoutManager.usedRect(for: textView.textContainer!).size
+    }
+}
 
-
-
-
+class LKTextView: NSTextView {
+    
+    override var intrinsicContentSize: NSSize {
+        guard let manager = textContainer?.layoutManager else { return .zero }
+        
+        manager.ensureLayout(for: textContainer!)
+        return manager.usedRect(for: textContainer!).size
+    }
+}
 
 
 
 /// View Controller to visualize a regular expression and its matches in some test input
-class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSTextViewDelegate, NSPopoverDelegate {
+class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopoverDelegate {
     
     // Title Bar
     private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
@@ -147,7 +160,8 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
     
     // Regex Text Field
     private let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
-    private let regexTextField = LKFocusAwareTextField()
+    let regexTextView = LKTextView()
+    let regexTextViewContainingScrollView = LKScrollView()
     private let regexCompilationErrorImageView = NSImageView(image: NSImage(named: .invalidDataFreestandingTemplate)!.tinted(withColor: .red))
     
     // Test String Text View
@@ -219,8 +233,8 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         subtitleLabel.alignment = .center
         
         // Regex Entry
-        regexTextField.font = NSFont.menlo.with(size: 15)
-        regexTextField.placeholderString = "Enter regex here..."
+        regexTextView.font = NSFont.menlo.with(size: 15)
+        //regexTextView.placeholderString = "Enter regex here..."
         
         // Test String Entry
         regexTestStringTextView.font = NSFont.menlo.with(size: 15)
@@ -238,14 +252,17 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         // TODO not sure whether we should actually give the text view a background color
         //regexTestStringTextViewContainingScrollView.backgroundColor = NSColor.lightGray.withAlphaComponent(0.05)
         
-        setupTextView()
+        setupTextView(regexTestStringTextView, inScrollView: regexTestStringTextViewContainingScrollView)
+        
+        regexTextView.translatesAutoresizingMaskIntoConstraints = false
+        regexTextViewContainingScrollView.documentView = regexTextView
         
         // Add all views
         [
             titleLabel,
             subtitleLabel,
             regexTextFieldTitleLabel,
-            regexTextField,
+            regexTextViewContainingScrollView,
             regexTestStringTextViewTitleLabel,
             regexTestStringTextViewContainingScrollView,
             regexOptionsButton,
@@ -271,7 +288,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
             (titleLabel, 0),
             (subtitleLabel, defaultSpacing),
             (regexTextFieldTitleLabel, defaultOffset),
-            (regexTextField, defaultSpacing),
+            (regexTextViewContainingScrollView, defaultSpacing),
             (regexTestStringTextViewTitleLabel, defaultOffset),
             (regexTestStringTextViewContainingScrollView, defaultSpacing)
         ]
@@ -282,8 +299,25 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
             element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
         }
         
+        regexTextView.delegate = self
+        regexTextViewContainingScrollView.borderType = .bezelBorder
+        
+        // Disable all scrolling in the regex text view. the goal is to make this seem like it is a multiline text field
+        regexTextViewContainingScrollView.hasHorizontalScroller = false
+        regexTextViewContainingScrollView.hasVerticalScroller = false
+        regexTextViewContainingScrollView.verticalScrollElasticity = .none
+        regexTextViewContainingScrollView.horizontalScrollElasticity = .none
+        
+        // Make sure that the regex text view pushes down the other views when it expands
+        regexTextViewContainingScrollView.setContentHuggingPriority(.fittingSizeCompression, for: .vertical)
+        
+        // Make sure the regex text view's containing scroll view resizes when the regex tezt view's dimensions change
+        regexTextViewContainingScrollView.height(to: regexTextView, offset: 2)
+        regexTextViewContainingScrollView.width(to: regexTextView, offset: 2)
+        
+        
         // Settings
-        regexOptionsButton.topToBottom(of: regexTextField, offset: 6)
+        regexOptionsButton.topToBottom(of: regexTextViewContainingScrollView, offset: 6)
         regexOptionsButton.rightToSuperview(offset: defaultOffset)
         regexOptionsButton.target = self
         regexOptionsButton.action = #selector(showOptions(_:))
@@ -314,29 +348,27 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         
         
         // Setup the regex compilation error indicator
-        
-        regexTextField.addSubview(regexCompilationErrorImageView)
+        regexTextView.addSubview(regexCompilationErrorImageView)
         regexCompilationErrorImageView.edgesToSuperview(excluding: [.left], insets: NSEdgeInsets(top: 0, left: 0, bottom: 0, right: -5))
         regexCompilationErrorImageView.isHidden = true
         
         
         // Register observers and set default values
         
-        regexTextField.delegate = self
+        regexTextView.delegate = self
         regexTestStringTextView.delegate = self
         
-        regexTextField.stringValue = Defaults.regex
+        regexTextView.string = Defaults.regex
         regexTestStringTextView.string = Defaults.testInput
-        
-        // Hook into the regex text field to detect when it becomes first responder
-        // Why is this necessary? When a NSTextField becomes first responder, AppKit adds a new subview (_NSKeyboardFocusClipView). We have to make sure that our regex compilation error image view is on top of that other view, so that it remains visible
-        regexTextField.didBecomeFirstResponderAction = {
-            self.keepCompilationErrorImageViewVisible()
-        }
     }
     
     override func viewWillAppear() {
         super.viewWillAppear()
+        
+        // Ensure that the text is laid out properly
+        // If we omit this call, long regular expressions that wrap over multiple lines won't appear as expected
+        // (The scroll view doesn't resize and only shows the first line of the pattern)
+        regexTextViewContainingScrollView.invalidateIntrinsicContentSize()
         
         // We have to manually start the initial regex matching
         updateMatches()
@@ -348,13 +380,12 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
     
     // MARK: UI
     
-    private func setupTextView() {
+    private func setupTextView(_ textView: NSTextView, inScrollView scrollView: NSScrollView) {
         // TODO for whatever reason, the scroll bar does not appear. (probably bc auto layout)
         
         // This only configures the layout-related attributes of the text view and its containing scroll view
         // Everything else is configured in `viewDidLoad`
         
-        let scrollView = self.regexTestStringTextViewContainingScrollView
         let contentSize = scrollView.contentSize
         
         scrollView.borderType = .bezelBorder
@@ -362,7 +393,6 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         scrollView.hasHorizontalRuler = false
         scrollView.autoresizingMask = [.width, .height]
         
-        let textView = self.regexTestStringTextView
         textView.frame = NSRect(x: 0, y: 0, width: contentSize.width, height: contentSize.height)
         textView.minSize = NSSize(width: 0, height: contentSize.height)
         textView.maxSize = NSSize(width: .max, height: .max)
@@ -376,15 +406,6 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         scrollView.documentView = textView
     }
     
-    private func keepCompilationErrorImageViewVisible() {
-        regexTextField.sortSubviews({ a, b, _ -> ComparisonResult in
-            if a is NSImageView {
-                return ComparisonResult.orderedDescending
-            } else {
-                return ComparisonResult.orderedAscending
-            }
-        }, context: nil)
-    }
     
     // MARK: Event handling (social buttons, mouse hover, NSText{Field|View}Delegate)
     
@@ -408,16 +429,26 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         }
     }
     
-    override func controlTextDidChange(_ notification: Notification) {
-        guard notification.object as? NSTextField == self.regexTextField else { return }
-        Defaults.regex = regexTextField.stringValue
-        updateMatches()
+    func textDidChange(_ notification: Notification) {
+        guard let textView = notification.object as? NSTextView else { return }
+        
+        if textView == self.regexTextView {
+            // https://stackoverflow.com/a/44062950/2513803
+            textView.invalidateIntrinsicContentSize()
+            Defaults.regex = textView.string
+            updateMatches()
+        } else if textView == self.regexTestStringTextView {
+            Defaults.testInput = textView.string
+            updateMatches()
+        }
     }
     
-    func textDidChange(_ notification: Notification) {
-        guard notification.object as? NSTextView == self.regexTestStringTextView else { return }
-        Defaults.testInput = regexTestStringTextView.string
-        updateMatches()
+    // prevent newlines in the regex text view
+    // TODO is this really necessary? what if whitespaces are expliciely allowed?
+    func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
+        guard textView == self.regexTextView else { return true }
+        
+        return replacementString == "\n" ? false : true
     }
     
     var optionsPopover: NSPopover?
@@ -447,10 +478,9 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         
         let regex: RegEx
         do {
-            regex = try RegEx(self.regexTextField.stringValue, options: Defaults.regexOptions)
+            regex = try RegEx(Defaults.regex, options: Defaults.regexOptions)
         } catch {
-            keepCompilationErrorImageViewVisible()
-            regexCompilationErrorImageView.isHidden = regexTextField.stringValue.isEmpty
+            regexCompilationErrorImageView.isHidden = regexTextView.string.isEmpty
             regexCompilationErrorImageView.toolTip = "Error compiling regular expression: \(error.localizedDescription)"
             return
         }

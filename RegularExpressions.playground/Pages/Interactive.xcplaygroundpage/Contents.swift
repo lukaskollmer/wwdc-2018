@@ -148,7 +148,7 @@ private class LKTextView: NSTextView {
 
 
 /// View Controller to visualize a regular expression and its matches in some test input
-class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopoverDelegate {
+class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     
     // Title Bar
     private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
@@ -443,20 +443,20 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
         return replacementString == "\n" ? false : true
     }
     
-    var optionsPopover: NSPopover?
+    lazy var optionsPopover: NSPopover = {
+        let popover = NSPopover()
+        popover.contentViewController = LKOptionsViewController(changeHandler: self.updateMatches)
+        popover.behavior = .semitransient
+        popover.appearance = NSAppearance(named: .vibrantLight)
+        return popover
+    }()
     
     @objc private func showOptions(_ sender: NSButton) {
-        if let popover = optionsPopover {
-            popover.performClose(sender)
-            optionsPopover = nil
-            return
+        if optionsPopover.isShown {
+            optionsPopover.close()
+        } else {
+            optionsPopover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .maxY)
         }
-        
-        optionsPopover = NSPopover()
-        optionsPopover?.contentViewController = LKOptionsViewController(changeHandler: self.updateMatches)
-        optionsPopover?.behavior = .transient
-        optionsPopover?.show(relativeTo: sender.bounds, of: sender, preferredEdge: .maxY)
-        optionsPopover?.delegate = self
     }
     
     
@@ -525,14 +525,6 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
         highlightViews
             .filter { $0.kind == .captureGroup }
             .forEach(addViews)
-    }
-    
-    
-    // MARK: NSPopoverDelegate
-    func popoverDidClose(_ notification: Notification) {
-        if let popover = notification.object as? NSPopover, popover == optionsPopover {
-            optionsPopover = nil
-        }
     }
 }
 
@@ -639,7 +631,7 @@ private class LKOptionsViewController: NSViewController {
         let container = NSView()
         view.addSubview(container)
         
-        container.edgesToSuperview(insets: NSEdgeInsets(top: 8, left: 8, bottom: 8, right: -8))
+        container.edgesToSuperview(insets: NSEdgeInsets(top: 12, left: 8, bottom: 8, right: -8))
         
         
         let buttons: [NSButton] = NSRegularExpression.Options.all.map { option in

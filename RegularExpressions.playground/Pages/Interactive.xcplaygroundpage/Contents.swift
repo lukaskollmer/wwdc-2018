@@ -5,6 +5,7 @@ import PlaygroundSupport
 
 // It's important we register this as early as possible
 // Why? playgrounds don't properly print error messages for uncaught objc exceptions (rdar://38576713)
+// TODO should we reset regex and test string on crashes?
 NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
 
 
@@ -24,7 +25,9 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  - have altrnating colors to differentiate between matches that are directly following each other
  - add a (i) button to the top right corner that shows some sort or info/about window explaining how this works / what it can do
  - it seems like the left social button isn't quite on the same line as the border of the text view // FIXME
- - the options ui should not hide the text view, that'd would make it easier to see how changing the options will influence the matches
+ - the options ui should not appear on top of the text view, that'd make it easier to see how changing the options will influence the matches
+ - what about a "replace" feature?
+ - use a text view for regex entry, have it grow automatically as needed
  
  IDEAS:
  - make a regex to filter all swift files in a list of filenames
@@ -139,7 +142,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
     
     // Title Bar
     private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
-    private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer") // TODO make this a link?
+    private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer")
     
     
     // Regex Text Field
@@ -383,7 +386,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         }, context: nil)
     }
     
-    // MARK: Event handling (social buttons, mouse hover, NSText{Field|View}Delegate
+    // MARK: Event handling (social buttons, mouse hover, NSText{Field|View}Delegate)
     
     @objc private func didPressSocialButton(_ sender: NSButton) {
         let url = URL(string: "https://" + sender.title)!
@@ -393,7 +396,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
     override func mouseMoved(with event: NSEvent) {
         let location = self.regexTestStringTextView.convert(event.locationInWindow, from: self.view)
         
-        guard let highlightView = self.highlightViews.first(where: { $0.kind == .fullMatch &&  $0.frame.contains(location) }) else {
+        guard let highlightView = self.highlightViews.first(where: { $0.kind == .fullMatch && $0.frame.contains(location) }) else {
             // we're hovering over an un-highlighted part of the text view
             currentlyHoveredHighlightView = nil
             return
@@ -420,7 +423,6 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
     var optionsPopover: NSPopover?
     
     @objc private func showOptions(_ sender: NSButton) {
-        
         if let popover = optionsPopover {
             popover.performClose(sender)
             optionsPopover = nil
@@ -439,6 +441,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
     
     private func updateMatches() {
         
+        // Remove all old highlights
         self.highlightViews.forEach { $0.removeFromSuperview() }
         self.highlightViews.removeAll()
         
@@ -513,9 +516,11 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
 
 
 extension RegEx {
+    
     var namedCaptureGroups: [String] {
         let groupName = "groupName"
         
+        // Regular expression that matches a capture group and - if that capture group specifies a name - remembers that name
         let namedGroupsRegex = try! RegEx("(?<!\\\\) (?: \\((?:\\?<(?<\(groupName)>\\w+)>)? .*? \\) )", options: [.allowCommentsAndWhitespace])
         
         return namedGroupsRegex.matches(in: self.regex.pattern)
@@ -529,6 +534,7 @@ extension RegEx {
 
 extension String {
     fileprivate func substring(withRange range: NSRange) -> String {
+        // TODO do we really need this check?
         guard range.location + range.length <= self.count else { print("ugh"); fatalError()}
         return NSString(string: self).substring(with: range)
     }
@@ -698,7 +704,6 @@ extension NSRegularExpression.Options {
     private func makeAttributedString(title: String, subtitle: String) -> NSAttributedString {
         let string = NSMutableAttributedString()
         
-        
         let attributedTitle = NSAttributedString(string: title)
         let attributedSubtitle = NSAttributedString(string: subtitle, attributes: [
             .foregroundColor: NSColor.darkGray
@@ -708,9 +713,7 @@ extension NSRegularExpression.Options {
         string.append(NSAttributedString(string: "\n"))
         string.append(attributedSubtitle)
         
-        
-        return string.copy() as! NSAttributedString // TODO is that copy immutable?
-        //return NSAttributedString(attributedString: string)
+        return string.copy() as! NSAttributedString
     }
 }
 

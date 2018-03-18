@@ -590,21 +590,27 @@ private class LKMatchInfoViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let table = TextTable(numberOfColumns: 3)
-        
         let groupNames = match.regex.namedCaptureGroups
+        let hasGroupNameColumn = !groupNames.isEmpty
+        
+        let table = TextTable(numberOfColumns: hasGroupNameColumn ? 4 : 3)
         
         match.enumerateCapturingGroups { index, range, content in
-            var groupName = ""
+            var groupName: String?
             
-            // TODO can we put the group name somewhere else in the table where it might look a bit nicer?
             groupNames.forEach { name in
                 if match.result.range(withName: name) == range {
-                    groupName = "('\(name)')"
+                    groupName = "\(name)"
                 }
             }
             
-            table.addRow(values: "#\(index)", "range: \(range)" + groupName, "content: '\(content)'")
+            var columns = ["#\(index)", "range: \(range)", "content: '\(content)'"]
+            
+            if hasGroupNameColumn {
+                columns.insert(groupName ?? "", at: 2)
+            }
+            
+            table.addRow(values: columns)
         }
         
         let content = """
@@ -758,7 +764,8 @@ private class TextTable {
     
     private var rows = [[String]]()
     
-    func addRow(values: String...) {
+    
+    func addRow(values: [String]) {
         precondition(values.count == numberOfColumns, "Attempted to add a row with the wrong numbe of columns (got \(values.count), expected \(numberOfColumns))")
         
         rows.append(values)

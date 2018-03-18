@@ -331,7 +331,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
             let title = NSMutableAttributedString(string: $0.title)
             let attributes: [NSAttributedStringKey: Any] = [
                 .foregroundColor: NSColor.darkGray,
-                .font: $0.font?.with(size: 12)
+                .font: NSFont.systemFont(ofSize: 12)
             ]
             title.setAttributes(attributes, range: NSRange(location: 0, length: title.length))
             $0.attributedTitle = title

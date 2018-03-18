@@ -592,7 +592,7 @@ private class LKMatchInfoViewController: NSViewController {
             
             groupNames.forEach { name in
                 if match.result.range(withName: name) == range {
-                    groupName = "\(name)"
+                    groupName = "{\(name)}"
                 }
             }
             

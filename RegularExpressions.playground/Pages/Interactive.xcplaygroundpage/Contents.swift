@@ -96,7 +96,7 @@ private class LKMatchHighlightView: NSView {
     
     enum Kind {
         case fullMatch
-        case capturingGroup
+        case captureGroup
     }
     
     let match: RegEx.Result
@@ -487,16 +487,16 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
         regex.matches(in: tv.string).forEach { match in
             // TODO can we safely force-unwrap the text container?
             
-            match.enumerateCapturingGroups { index, range, content in
+            match.enumerateCaptureGroups { index, range, content in
                 tv.layoutManager?.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: tv.textContainer!) { rect, stop in
                     
-                    let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .capturingGroup
+                    let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .captureGroup
                     
                     
                     let color = { () -> NSColor in
                         switch kind {
                         case .fullMatch: return .fullMatchLightGreen
-                        case .capturingGroup: return .captureGroupBlue
+                        case .captureGroup: return .captureGroupBlue
                         }
                     }()
                     
@@ -523,7 +523,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
             .forEach(addViews)
         
         highlightViews
-            .filter { $0.kind == .capturingGroup }
+            .filter { $0.kind == .captureGroup }
             .forEach(addViews)
     }
     
@@ -549,7 +549,7 @@ extension RegEx {
             .filter { match in
                 let range = match.result.range(withName: groupName)
                 return range.location != .max && range.length > 0
-            }.map { $0.contents(ofCapturingGroup: groupName) }
+            }.map { $0.contents(ofCaptureGroup: groupName) }
     }
 }
 
@@ -587,7 +587,7 @@ private class LKMatchInfoViewController: NSViewController {
         
         let table = TextTable(numberOfColumns: hasGroupNameColumn ? 4 : 3)
         
-        match.enumerateCapturingGroups { index, range, content in
+        match.enumerateCaptureGroups { index, range, content in
             var groupName: String?
             
             groupNames.forEach { name in

@@ -70,41 +70,41 @@ public struct RegEx {
         /// - Parameter key: A capture group index
         public subscript(index: Int) -> String {
             get {
-                return self.contents(ofCapturingGroup: index)
+                return self.contents(ofCaptureGroup: index)
             }
         }
 
         public subscript(name: String) -> String {
             get {
-                return self.contents(ofCapturingGroup: name)
+                return self.contents(ofCaptureGroup: name)
             }
         }
 
 
         /// Access the value of a specific capture group
         ///
-        /// - Parameter group: The index of the capturing group
-        /// - Returns: The value/contents of the capturing group
-        public func contents(ofCapturingGroup groupIndex: Int) -> String {
+        /// - Parameter group: The index of the capture group
+        /// - Returns: The value/contents of the capture group
+        public func contents(ofCaptureGroup groupIndex: Int) -> String {
             return NSString(string: initialString).substring(with: self.result.range(at: groupIndex))
         }
 
-        public func contents(ofCapturingGroup groupName: String) -> String {
+        public func contents(ofCaptureGroup groupName: String) -> String {
             // TODO check whether a group with that name exists (if it doesn't, range.location is Int.max and length is 0)
             return NSString(string: initialString).substring(with: self.result.range(withName: groupName))
         }
         
-        public var numberOfCapturingGroups: Int {
+        public var numberOfCaptureGroups: Int {
             return self.result.numberOfRanges
         }
         
-        public func range(ofCapturingGroup groupIndex: Int) -> NSRange {
+        public func range(ofCaptureGroup groupIndex: Int) -> NSRange {
             return self.result.range(at: groupIndex)
         }
         
-        public func enumerateCapturingGroups(block: (Int, NSRange, String) -> Void) {
-            (0..<self.numberOfCapturingGroups).forEach { index in
-                block(index, self.range(ofCapturingGroup: index), self.contents(ofCapturingGroup: index))
+        public func enumerateCaptureGroups(block: (Int, NSRange, String) -> Void) {
+            (0..<self.numberOfCaptureGroups).forEach { index in
+                block(index, self.range(ofCaptureGroup: index), self.contents(ofCaptureGroup: index))
             }
         }
     }

@@ -24,7 +24,7 @@ Playground.currentPage = "Capture Groups"
  */
 let regex = try! RegEx(/*func [a-zA-Z]+\(\) -> ([A-Za-z]+)*/)
 let match = regex.matches(in: "func foo() -> String").first!
-let returnType = match.contents(ofCapturingGroup: 1)
+let returnType = match.contents(ofCaptureGroup: 1)
 /*:
  ### Template Substitution
 

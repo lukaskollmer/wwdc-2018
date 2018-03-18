@@ -449,7 +449,7 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
             regex = try RegEx(self.regexTextField.stringValue, options: Defaults.regexOptions)
         } catch {
             keepCompilationErrorImageViewVisible()
-            regexCompilationErrorImageView.isHidden = false
+            regexCompilationErrorImageView.isHidden = regexTextField.stringValue.isEmpty
             regexCompilationErrorImageView.toolTip = "Error compiling regular expression: \(error.localizedDescription)"
             return
         }

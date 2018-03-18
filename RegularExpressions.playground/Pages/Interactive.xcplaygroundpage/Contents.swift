@@ -71,7 +71,7 @@ extension NSImage {
 
 extension NSTextView {
     @available(*, deprecated, message: "thefuck you're doing?")
-    var lk_placeholderString: String? {
+    fileprivate var lk_placeholderString: String? {
         get { return self.perform(NSSelectorFromString("placeholderString")).takeUnretainedValue() as? String }
         set { self.perform(NSSelectorFromString("setPlaceholderString:"), with: newValue) }
     }
@@ -124,7 +124,7 @@ private class LKMatchHighlightView: NSView {
 
 // Subclasses of NSScrollView and NSTextView to implement an auto-expanding multiline text view
 
-class LKScrollView: NSScrollView {
+private class LKScrollView: NSScrollView {
     override var intrinsicContentSize: NSSize {
         guard
             let textView = self.documentView as? NSTextView,
@@ -136,8 +136,7 @@ class LKScrollView: NSScrollView {
     }
 }
 
-class LKTextView: NSTextView {
-    
+private class LKTextView: NSTextView {
     override var intrinsicContentSize: NSSize {
         guard let manager = textContainer?.layoutManager else { return .zero }
         
@@ -158,8 +157,8 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
     
     // Regex Text Field
     private let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
-    let regexTextView = LKTextView()
-    let regexTextViewContainingScrollView = LKScrollView()
+    private let regexTextView = LKTextView()
+    private let regexTextViewContainingScrollView = LKScrollView()
     private let regexCompilationErrorImageView = NSImageView(image: NSImage(named: .invalidDataFreestandingTemplate)!.tinted(withColor: .red))
     
     // Test String Text View
@@ -215,7 +214,6 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
     override func loadView() {
         self.view = NSView(frame: SIZE)
         self.view.layer = CALayer()
-        //self.view.layer?.backgroundColor = NSColor(red: 236/255, green: 236/255, blue: 236/255, alpha: 1).cgColor
         self.view.layer?.backgroundColor = .white
     }
     
@@ -247,9 +245,6 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
             $0.font = NSFont.systemFont(ofSize: 13.5, weight: NSFont.Weight.medium)
         }
         
-        // TODO not sure whether we should actually give the text view a background color
-        //regexTestStringTextViewContainingScrollView.backgroundColor = NSColor.lightGray.withAlphaComponent(0.05)
-        
         setupTextView(regexTestStringTextView, inScrollView: regexTestStringTextViewContainingScrollView)
         
         regexTextView.translatesAutoresizingMaskIntoConstraints = false
@@ -279,9 +274,10 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
         // Title Label
         titleLabel.edgesToSuperview(excluding: .bottom, insets: NSEdgeInsets(top: defaultSpacing, left: 0, bottom: 0, right: 0))
         
-        // TODO explain what's going on here
-        // array of views, with the offset they should have to their superview
-        // we start at the 2nd element
+        // What's going on here?
+        // We create auto layout constraints for all views in the array below, stacking them up on top of each other
+        // We start at the second entry and attach each view to the bottom of the view in the previous element in the array
+        // The second value specifies the offset a view should have to the one it's being attached to
         let layout: [(view: NSView, offset: CGFloat)] = [
             (titleLabel, 0),
             (subtitleLabel, defaultSpacing),
@@ -290,14 +286,11 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
             (regexTestStringTextViewTitleLabel, defaultOffset),
             (regexTestStringTextViewContainingScrollView, defaultSpacing)
         ]
-        
-        
         layout.suffix(from: 1).enumerated().forEach { (index: Int, element: (view: NSView, offset: CGFloat)) in
             element.view.topToBottom(of: layout[index].view, offset: element.offset)
             element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
         }
         
-        regexTextView.delegate = self
         regexTextViewContainingScrollView.borderType = .bezelBorder
         
         // Disable all scrolling in the regex text view. the goal is to make this seem like it is a multiline text field
@@ -319,6 +312,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate, NSPopov
         regexOptionsButton.rightToSuperview(offset: defaultOffset)
         regexOptionsButton.target = self
         regexOptionsButton.action = #selector(showOptions(_:))
+        
         
         // Setup the social row
         
@@ -628,7 +622,7 @@ private class LKMatchInfoViewController: NSViewController {
 }
 
 
-class LKOptionsViewController: NSViewController {
+private class LKOptionsViewController: NSViewController {
     
     let changeHandler: () -> Void
     
@@ -682,7 +676,7 @@ class LKOptionsViewController: NSViewController {
 }
 
 extension NSRegularExpression.Options {
-    static let all: [NSRegularExpression.Options] = [
+    fileprivate static let all: [NSRegularExpression.Options] = [
         .caseInsensitive,
         .allowCommentsAndWhitespace,
         .ignoreMetacharacters,
@@ -692,7 +686,7 @@ extension NSRegularExpression.Options {
         .useUnicodeWordBoundaries
     ]
     
-    var fancyDescription: NSAttributedString {
+    fileprivate var fancyDescription: NSAttributedString {
         switch self {
         case .caseInsensitive:
             return makeAttributedString(

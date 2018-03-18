@@ -90,6 +90,7 @@ public struct RegEx {
         }
 
         public func contents(ofCapturingGroup groupName: String) -> String {
+            // TODO check whether a group with that name exists (if it doesn't, range.location is Int.max and length is 0)
             return NSString(string: initialString).substring(with: self.result.range(withName: groupName))
         }
         

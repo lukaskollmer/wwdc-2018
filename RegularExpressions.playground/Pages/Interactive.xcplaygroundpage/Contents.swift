@@ -442,8 +442,6 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
         self.highlightViews.forEach { $0.removeFromSuperview() }
         self.highlightViews.removeAll()
         
-        // TODO maybe show some UI to select which optinons should be enabled?
-        // TODO are there any other obvious options we should enable for this UI?
         let regex: RegEx
         do {
             regex = try RegEx(self.regexTextField.stringValue, options: Defaults.regexOptions)

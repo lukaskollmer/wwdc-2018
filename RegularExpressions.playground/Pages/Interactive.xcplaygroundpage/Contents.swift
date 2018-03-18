@@ -514,8 +514,24 @@ class LKVisualRegExViewController: NSViewController, NSTextFieldDelegate, NSText
 }
 
 
+extension RegEx {
+    var namedCaptureGroups: [String] {
+        let groupName = "groupName"
+        
+        let namedGroupsRegex = try! RegEx("(?<!\\\\) (?: \\((?:\\?<(?<\(groupName)>\\w+)>)? .*? \\) )", options: [.allowCommentsAndWhitespace])
+        
+        return namedGroupsRegex.matches(in: self.regex.pattern)
+            .filter { match in
+                let range = match.result.range(withName: groupName)
+                return range.location != .max && range.length > 0
+            }.map { $0.contents(ofCapturingGroup: groupName) }
+    }
+}
+
+
 extension String {
     fileprivate func substring(withRange range: NSRange) -> String {
+        guard range.location + range.length <= self.count else { print("ugh"); fatalError()}
         return NSString(string: self).substring(with: range)
     }
 }
@@ -542,8 +558,19 @@ private class LKMatchInfoViewController: NSViewController {
         
         let table = TextTable(numberOfColumns: 3)
         
+        let groupNames = match.regex.namedCaptureGroups
+        
         match.enumerateCapturingGroups { index, range, content in
-            table.addRow(values: "#\(index)", "range: \(range)", "content: '\(content)'")
+            var groupName = ""
+            
+            // TODO can we put the group name somewhere else in the table where it might look a bit nicer?
+            groupNames.forEach { name in
+                if match.result.range(withName: name) == range {
+                    groupName = "('\(name)')"
+                }
+            }
+            
+            table.addRow(values: "#\(index)", "range: \(range)" + groupName, "content: '\(content)'")
         }
         
         let content = """
@@ -590,6 +617,7 @@ class LKOptionsViewController: NSViewController {
             button.target = self
             button.action = #selector(optionsChanged(_:))
             button.tag = Int(option.rawValue)
+            button.state = Defaults.regexOptions.contains(option) ? .on : .off
             return button
         }
         
@@ -598,7 +626,7 @@ class LKOptionsViewController: NSViewController {
         
         // For some reason the first button is a couple of pixels out of view
         // We correct this by fixing its size to 30 points (fun fact: the button's size is 30pt anyway
-        // but explicitly telling AppKit to render it w/ 30 points height seems to fix the bug
+        // but explicitly telling AppKit to render it w/ 30 points height seems to fix the bug)
         buttons.first!.height(30)
     }
     

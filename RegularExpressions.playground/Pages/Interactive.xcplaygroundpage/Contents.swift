@@ -21,13 +21,11 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
    This slows down the execution quite dramatically (rdar://38576884)
  
  TODO
- - when clicking the regex text field for the first time, the cursor goes to the beginning of the text field for a fraction of a second, before going to the end of the text field. would be nice if we could fix that
  - have altrnating colors to differentiate between matches that are directly following each other
  - add a (i) button to the top right corner that shows some sort or info/about window explaining how this works / what it can do
  - it seems like the left social button isn't quite on the same line as the border of the text view // FIXME
  - the options ui should not appear on top of the text view, that'd make it easier to see how changing the options will influence the matches
  - what about a "replace" feature?
- - use a text view for regex entry, have it grow automatically as needed
  
  IDEAS:
  - make a regex to filter all swift files in a list of filenames

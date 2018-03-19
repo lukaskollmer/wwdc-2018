@@ -15,7 +15,7 @@ extension String {
     }
 }
 
-// TODO make this a class
+
 /// A Regular Expression
 public struct RegEx {
 
@@ -37,15 +37,9 @@ public struct RegEx {
         public var string: String {
             return NSString(string: initialString).substring(with: range)
         }
-
-        /// The regular expression this match is the result of
-        public var regex: RegEx {
-            return RegEx(result.regularExpression!)
-        }
-
-        public var description: String {
-            return "<RegEx.Result range=\(NSStringFromRange(range)) string='\(string)'>"
-        }
+        
+        /// The regular expression this match is a result of
+        public let regex: RegEx
 
         /// The full text the regex was matched against
         public let initialString: String // The string this regex was matched against
@@ -57,43 +51,38 @@ public struct RegEx {
         /// - Parameters:
         ///   - result: The result this match represents
         ///   - initialString: The full string the regex was matched against
-        init(result: NSTextCheckingResult, initialString: String, index: Int) {
+        init(result: NSTextCheckingResult, initialString: String, index: Int, regex: RegEx) {
             self.result = result
             self.initialString = initialString
             self.index = index
+            self.regex = regex
         }
 
 
-        /// Access the value of a specific capture group
-        /// eg, `result[1]` returns the value of the first capture group
-        ///
-        /// - Parameter key: A capture group index
+        /// Access the contents of a specific capture group
         public subscript(index: Int) -> String {
-            get {
-                return self.contents(ofCaptureGroup: index)
-            }
+            get { return self.contents(ofCaptureGroup: index) }
         }
 
+        /// Access the contents of a specific capture group
         public subscript(name: String) -> String {
-            get {
-                return self.contents(ofCaptureGroup: name)
-            }
+            get { return self.contents(ofCaptureGroup: name) }
         }
 
 
-        /// Access the value of a specific capture group
-        ///
-        /// - Parameter group: The index of the capture group
-        /// - Returns: The value/contents of the capture group
+        /// Access the contents of the capture group w/ a specific index
+        /// Passing the index of a non-existent capture group is UB
         public func contents(ofCaptureGroup groupIndex: Int) -> String {
             return NSString(string: initialString).substring(with: self.result.range(at: groupIndex))
         }
 
+        /// Access the contents of the capture group w/ a specific name
+        /// Passing the name of a non-existent capture group is UB
         public func contents(ofCaptureGroup groupName: String) -> String {
-            // TODO check whether a group with that name exists (if it doesn't, range.location is Int.max and length is 0)
             return NSString(string: initialString).substring(with: self.result.range(withName: groupName))
         }
         
+        /// Get the total number of capture groups
         public var numberOfCaptureGroups: Int {
             return self.result.numberOfRanges
         }
@@ -102,10 +91,16 @@ public struct RegEx {
             return self.result.range(at: groupIndex)
         }
         
+        /// Enumerate all capture groups
+        /// The block takes 3 parameters: groupIndex, groupRange and groupContents
         public func enumerateCaptureGroups(block: (Int, NSRange, String) -> Void) {
             (0..<self.numberOfCaptureGroups).forEach { index in
                 block(index, self.range(ofCaptureGroup: index), self.contents(ofCaptureGroup: index))
             }
+        }
+        
+        public var description: String {
+            return "<RegEx.Result range=\(NSStringFromRange(range)) string='\(string)'>"
         }
     }
 
@@ -137,10 +132,11 @@ public struct RegEx {
     /// - Returns: An array of matches
     public func matches(in string: String) -> [RegEx.Result] {
         return self.regex.matches(in: string, options: [], range: string.range).enumerated().map {
-            return RegEx.Result(result: $1, initialString: string, index: $0)
+            return RegEx.Result(result: $1, initialString: string, index: $0, regex: self)
         }
     }
     
+    /// Check whether a regular expression matches a string
     public func matches(_ string: String) -> Bool {
         return !self.matches(in: string).isEmpty
     }
@@ -149,7 +145,7 @@ public struct RegEx {
     public func replace(in string: String, withTemplate template: String) -> String {
         // Instead of forwarding the `replace` call to -[NSRegularExpression stringByReplacingMatchesInString:options:range:withTemplate:]
         // we implement parts of this ourselves to detect named capture groups and properly handle them.
-        // NSRegularExpression doesn't yet fully support named capture (you can use named groups in the regex and the matches, but template substitution will ignore named groups). See also DTS #686210772 and radar #38426586
+        // Why? NSRegularExpression doesn't yet fully support named capture (you can use named groups in the regex and the matches, but template substitution will ignore named groups). See also DTS #686210772 and radar://38426586
 
         typealias Substitution = (groupName: String, beginning: Int, end: Int)
 
@@ -210,6 +206,20 @@ public struct RegEx {
         splitComponents.append(_string.substring(with: NSRange(location: lastEnd, length: string.count - lastEnd)))
         return splitComponents
     }
+    
+    /// The names defined in the pattern's named capture groups
+    public var namedCaptureGroups: [String] {
+        let groupName = "groupName"
+        
+        // Regular expression that matches a capture group and - if that capture group specifies a name - remembers that name
+        let namedGroupsRegex = try! RegEx("(?<!\\\\) (?: \\((?:\\?<(?<\(groupName)>\\w+)>)? .*? \\) )", options: [.allowCommentsAndWhitespace])
+        
+        return namedGroupsRegex.matches(in: self.regex.pattern)
+            .filter { match in
+                let range = match.result.range(withName: groupName)
+                return range.location != .max && range.length > 0
+            }.map { $0.contents(ofCaptureGroup: groupName) }
+    }
 
 }
 
@@ -221,6 +231,8 @@ extension RegEx : ExpressibleByStringLiteral {
         try! self.init(value)
     }
 }
+
+// MARK: RegEx + Comment Initialization (expreimental) // TODO remove?
 
 public struct Playground {
     /// Name of the current Playground Page

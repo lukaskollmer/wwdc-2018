@@ -81,6 +81,20 @@ extension NSTextView {
 }
 
 
+extension String {
+    fileprivate func substring(withRange range: NSRange) -> String {
+        return NSString(string: self).substring(with: range)
+    }
+}
+
+extension CALayer {
+    fileprivate convenience init(backgroundColor color: NSColor) {
+        self.init()
+        self.backgroundColor = color.cgColor
+    }
+}
+
+
 private func measure(_ title: String? = nil, _ block: () -> Void) {
     let start = Date()
     
@@ -89,13 +103,6 @@ private func measure(_ title: String? = nil, _ block: () -> Void) {
     let end = Date()
     let msg = title != nil ? " \(title!)" : ""
     print("[⏱]\(msg) \(end.timeIntervalSince(start))")
-}
-
-extension CALayer {
-    fileprivate convenience init(backgroundColor color: NSColor) {
-        self.init()
-        self.backgroundColor = color.cgColor
-    }
 }
 
 
@@ -529,30 +536,6 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         highlightViews
             .filter { $0.kind == .captureGroup }
             .forEach(addViews)
-    }
-}
-
-
-extension RegEx {
-    
-    var namedCaptureGroups: [String] {
-        let groupName = "groupName"
-        
-        // Regular expression that matches a capture group and - if that capture group specifies a name - remembers that name
-        let namedGroupsRegex = try! RegEx("(?<!\\\\) (?: \\((?:\\?<(?<\(groupName)>\\w+)>)? .*? \\) )", options: [.allowCommentsAndWhitespace])
-        
-        return namedGroupsRegex.matches(in: self.regex.pattern)
-            .filter { match in
-                let range = match.result.range(withName: groupName)
-                return range.location != .max && range.length > 0
-            }.map { $0.contents(ofCaptureGroup: groupName) }
-    }
-}
-
-
-extension String {
-    fileprivate func substring(withRange range: NSRange) -> String {
-        return NSString(string: self).substring(with: range)
     }
 }
 

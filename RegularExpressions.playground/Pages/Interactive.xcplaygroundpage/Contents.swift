@@ -19,6 +19,7 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  - For performance reasons, we always use `Collection.forEach(:_)` instead of `for in` loops
    Why? Xcode visualizes `for in` loops, either by counting the number of iterations or by actually logging all objects.
    This slows down the execution quite dramatically (rdar://38576884)
+ - i'd love to make the RegEx Options popover detachable, so that it doesn't hide the text view and it'd be easier to see how changing individual options affects the regex matches. However, detached popovers don't work properly in playgrounds (the arrow doesn't disappear and there are some glitches around the close button) rdar://38598185
  
  TODO
  - have altrnating colors to differentiate between matches that are directly following each other

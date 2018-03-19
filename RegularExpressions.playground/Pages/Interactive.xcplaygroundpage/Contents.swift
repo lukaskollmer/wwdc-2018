@@ -19,7 +19,9 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  - For performance reasons, we always use `Collection.forEach(:_)` instead of `for in` loops
    Why? Xcode visualizes `for in` loops, either by counting the number of iterations or by actually logging all objects.
    This slows down the execution quite dramatically (rdar://38576884)
- - i'd love to make the RegEx Options popover detachable, so that it doesn't hide the text view and it'd be easier to see how changing individual options affects the regex matches. However, detached popovers don't work properly in playgrounds (the arrow doesn't disappear and there are some glitches around the close button) rdar://38598185
+ - i'd love to make the RegEx Options popover detachable, so that it doesn't hide the text view
+   and it'd be easier to see how changing individual options affects the regex matches.
+   However, detached popovers don't work properly in playgrounds (the arrow doesn't disappear and there are some glitches around the close button) (rdar://38598185)
  
  TODO
  - have altrnating colors to differentiate between matches that are directly following each other
@@ -89,6 +91,13 @@ private func measure(_ title: String? = nil, _ block: () -> Void) {
     print("[⏱]\(msg) \(end.timeIntervalSince(start))")
 }
 
+extension CALayer {
+    fileprivate convenience init(backgroundColor color: NSColor) {
+        self.init()
+        self.backgroundColor = color.cgColor
+    }
+}
+
 
 private let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
 
@@ -109,12 +118,10 @@ private class LKMatchHighlightView: NSView {
         super.init(frame: frame)
         
         // Setup background color
-        self.layer = CALayer()
-        self.layer?.backgroundColor = .white
+        self.layer = CALayer(backgroundColor: .white)
         
         let colorView = NSView()
-        colorView.layer = CALayer()
-        colorView.layer?.backgroundColor = color.cgColor
+        colorView.layer = CALayer(backgroundColor: color)
         self.addSubview(colorView)
         colorView.edgesToSuperview()
     }
@@ -189,10 +196,9 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
                 matchInfoPopover?.performClose(nil)
                 matchInfoPopover = nil
                 
-                let vc = LKMatchInfoViewController(match: currentlyHoveredHighlightView.match)
                 matchInfoPopover = NSPopover()
                 matchInfoPopover?.appearance = .dark
-                matchInfoPopover?.contentViewController = vc
+                matchInfoPopover?.contentViewController = LKMatchInfoViewController(match: currentlyHoveredHighlightView.match)
                 matchInfoPopover?.behavior = .semitransient
                 matchInfoPopover?.show(relativeTo: currentlyHoveredHighlightView.bounds, of: currentlyHoveredHighlightView, preferredEdge: .maxY)
             } else {
@@ -214,8 +220,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     
     override func loadView() {
         self.view = NSView(frame: SIZE)
-        self.view.layer = CALayer()
-        self.view.layer?.backgroundColor = .white
+        self.view.layer = CALayer(backgroundColor: .white)
     }
     
     override func viewDidLoad() {
@@ -400,7 +405,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     }
     
     
-    // MARK: Event handling (social buttons, mouse hover, NSText{Field|View}Delegate)
+    // MARK: Event handling (social buttons, mouse hover, NSTextViewDelegate)
     
     @objc private func didPressSocialButton(_ sender: NSButton) {
         let url = URL(string: "https://" + sender.title)!
@@ -439,9 +444,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     // prevent newlines in the regex text view
     // TODO is this really necessary? what if whitespaces are expliciely allowed?
     func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
-        guard textView == self.regexTextView else { return true }
-        
-        return replacementString == "\n" ? false : true
+        return textView == self.regexTextView && replacementString == "\n" ? false : true
     }
     
     lazy var optionsPopover: NSPopover = {
@@ -740,6 +743,7 @@ extension NSRegularExpression.Options {
 
 
 /// Simple string table generator. Used when displaying match infos
+// TODO make this a struct?
 private class TextTable {
     let numberOfColumns: Int
     

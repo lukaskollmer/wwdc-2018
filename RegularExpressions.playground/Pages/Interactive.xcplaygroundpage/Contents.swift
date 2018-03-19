@@ -380,6 +380,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     
     private func setupTextView(_ textView: NSTextView, inScrollView scrollView: NSScrollView) {
         // TODO for whatever reason, the scroll bar does not appear. (probably bc auto layout)
+        // TODO how much of this can we get rid of before it stops working? surely not all of this is actually needed, right?
         
         // This only configures the layout-related attributes of the text view and its containing scroll view
         // Everything else is configured in `viewDidLoad`
@@ -508,7 +509,6 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
                     self.highlightViews.append(highlightView)
                 }
             }
-            
         }
         
         // Add the highlight views to the scroll view's view hierarchy
@@ -552,8 +552,6 @@ extension RegEx {
 
 extension String {
     fileprivate func substring(withRange range: NSRange) -> String {
-        // TODO do we really need this check?
-        guard range.location + range.length <= self.count else { print("ugh"); fatalError()}
         return NSString(string: self).substring(with: range)
     }
 }
@@ -581,7 +579,7 @@ private class LKMatchInfoViewController: NSViewController {
         let groupNames = match.regex.namedCaptureGroups
         let hasGroupNameColumn = !groupNames.isEmpty
         
-        let table = TextTable(numberOfColumns: hasGroupNameColumn ? 4 : 3)
+        var table = TextTable(numberOfColumns: hasGroupNameColumn ? 4 : 3)
         
         match.enumerateCaptureGroups { index, range, content in
             var groupName: String?
@@ -743,23 +741,18 @@ extension NSRegularExpression.Options {
 
 
 /// Simple string table generator. Used when displaying match infos
-// TODO make this a struct?
-private class TextTable {
+private struct TextTable {
     let numberOfColumns: Int
+    private var rows = [[String]]()
     
     init(numberOfColumns: Int) {
         self.numberOfColumns = numberOfColumns
     }
     
-    private var rows = [[String]]()
-    
-    
-    func addRow(values: [String]) {
+    mutating func addRow(values: [String]) {
         precondition(values.count == numberOfColumns, "Attempted to add a row with the wrong numbe of columns (got \(values.count), expected \(numberOfColumns))")
-        
         rows.append(values)
     }
-    
     
     var stringValue: String {
         var rowStrings = [String](repeating: "", count: rows.count)
@@ -772,10 +765,8 @@ private class TextTable {
                 rowStrings[index] += columnValue.padding(toLength: maxLength + 1, withPad: " ", startingAt: 0)
             }
         }
-        
         return rowStrings.joined(separator: "\n")
     }
-    
 }
 
 

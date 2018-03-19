@@ -759,7 +759,7 @@ private struct TextTable {
         
         (0..<numberOfColumns).forEach { column in
             let columnValues = rows.map { $0[column] }
-            let maxLength = columnValues.reduce(0, { max($0, $1.count) })
+            let maxLength = columnValues.reduce(0) { max($0, $1.count) }
             
             columnValues.enumerated().forEach { index, columnValue in
                 rowStrings[index] += columnValue.padding(toLength: maxLength + 1, withPad: " ", startingAt: 0)

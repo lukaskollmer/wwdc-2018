@@ -182,32 +182,8 @@ private class LKTextView: NSTextView {
 }
 
 
-
-/// View Controller to visualize a regular expression and its matches in some test input
-class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
-    
-    // Title Bar
-    private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
-    private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer")
-    
-    
-    // Regex Text Field
-    private let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
-    private let regexTextView = LKTextView()
-    private let regexTextViewContainingScrollView = LKScrollView()
-    private let regexCompilationErrorImageView = NSImageView(image: NSImage(named: .invalidDataFreestandingTemplate)!.tinted(withColor: .red))
-    
-    // Test String Text View
-    private let regexTestStringTextViewTitleLabel = NSTextField(labelWithString: "Test Input")
-    private let regexTestStringTextViewContainingScrollView = NSScrollView()
-    private let regexTestStringTextView = LKTextView()
-    
-    // Settings
-    private let regexOptionsButton = NSButton(title: "RegEx Options", target: nil, action: nil)
-    
-    // Social Row
-    private let leftSocialButton  = NSButton(title: "lukaskollmer.me", target: nil, action: nil)
-    private let rightSocialButton = NSButton(title: "github.com/lukaskollmer", target: nil, action: nil)
+/// LKTextView subclass that can highlight the matches of a regular expression
+private class LKMatchResultHighlightingTextView: LKTextView {
     
     // MARK: Match highlighting
     private var highlightViews = [LKMatchHighlightView]()
@@ -236,6 +212,102 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
             }
         }
     }
+    
+    func updateHighlights(forMatches matches: [RegEx.Result]) {
+        // Remove all old highlights
+        self.highlightViews.forEach { $0.removeFromSuperview() }
+        self.highlightViews.removeAll()
+        
+        
+        guard
+            let sv = self.superview?.superview,
+            let layoutManager = self.layoutManager,
+            let textContainer = self.textContainer
+        else { return }
+        
+        matches.forEach { match in
+            // TODO can we safely force-unwrap the text container?
+            
+            match.enumerateCaptureGroups { index, range, content in
+                layoutManager.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: textContainer) { rect, stop in
+                    let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .captureGroup
+                    
+                    let color = { () -> NSColor in
+                        switch kind {
+                        case .fullMatch: return .fullMatchLightGreen
+                        case .captureGroup: return .captureGroupBlue
+                        }
+                    }()
+                    
+                    self.highlightViews.append(LKMatchHighlightView(match: match, frame: rect, color: color, kind: kind))
+                }
+            }
+        }
+        
+        
+        // Add the highlight views to the scroll view's view hierarchy
+        // This is split up in two parts:
+        // We first add all highlight views for full matches, and then all highlight views for capture groups
+        // This ensures that the highlight views for capture groups are on top of the highlight views for full
+        // matches and we don't have to manually rearrange the view hierarchy
+        
+        let addViews = { (view: NSView) -> Void in
+            // the scroll view's only subview is a NSClipView, which has at least 3 subviews, the last of which is the text view
+            sv.subviews.first!.addSubview(view, positioned: .below, relativeTo: self)
+        }
+        
+        highlightViews
+            .filter { $0.kind == .fullMatch }
+            .forEach(addViews)
+        
+        highlightViews
+            .filter { $0.kind == .captureGroup }
+            .forEach(addViews)
+    }
+    
+    
+    func didHover(over point: NSPoint) {
+        guard let highlightView = self.highlightViews.first(where: { $0.kind == .fullMatch && $0.frame.contains(point) }) else {
+            // we're hovering over an un-highlighted part of the text view
+            currentlyHoveredHighlightView = nil
+            return
+        }
+        
+        // we're currently hovering over *some* highlight view
+        if highlightView != currentlyHoveredHighlightView {
+            currentlyHoveredHighlightView = highlightView
+        }
+    }
+}
+
+
+
+/// View Controller to visualize a regular expression and its matches in some test input
+class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
+    
+    // Title Bar
+    private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
+    private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer")
+    
+    
+    // Regex Text Field
+    private let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
+    private let regexTextView = LKTextView()
+    private let regexTextViewContainingScrollView = LKScrollView()
+    private let regexCompilationErrorImageView = NSImageView(image: NSImage(named: .invalidDataFreestandingTemplate)!.tinted(withColor: .red))
+    
+    // Test String Text View
+    private let regexTestStringTextViewTitleLabel = NSTextField(labelWithString: "Test Input")
+    private let regexTestStringTextViewContainingScrollView = NSScrollView()
+    private let regexTestStringTextView = LKMatchResultHighlightingTextView()
+    
+    // Settings
+    private let regexOptionsButton = NSButton(title: "RegEx Options", target: nil, action: nil)
+    
+    // Social Row
+    private let leftSocialButton  = NSButton(title: "lukaskollmer.me", target: nil, action: nil)
+    private let rightSocialButton = NSButton(title: "github.com/lukaskollmer", target: nil, action: nil)
+    
     
     // MARK: View Controller lifecycle
     
@@ -396,7 +468,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         // If we omit this call, long regular expressions that wrap over multiple lines won't appear as expected
         // (The scroll view doesn't resize and only shows the first line of the pattern)
         regexTextViewContainingScrollView.invalidateIntrinsicContentSize()
-        
+    
         // We have to manually start the initial regex matching
         updateMatches()
         
@@ -445,17 +517,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     
     override func mouseMoved(with event: NSEvent) {
         let location = self.regexTestStringTextView.convert(event.locationInWindow, from: self.view)
-        
-        guard let highlightView = self.highlightViews.first(where: { $0.kind == .fullMatch && $0.frame.contains(location) }) else {
-            // we're hovering over an un-highlighted part of the text view
-            currentlyHoveredHighlightView = nil
-            return
-        }
-        
-        // we're currently hovering over *some* highlight view
-        if highlightView != currentlyHoveredHighlightView {
-            currentlyHoveredHighlightView = highlightView
-        }
+        self.regexTestStringTextView.didHover(over: location)
     }
     
     func textDidChange(_ notification: Notification) {
@@ -499,10 +561,6 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     
     private func updateMatches() {
         
-        // Remove all old highlights
-        self.highlightViews.forEach { $0.removeFromSuperview() }
-        self.highlightViews.removeAll()
-        
         let regex: RegEx
         do {
             regex = try RegEx(Defaults.regex, options: Defaults.regexOptions)
@@ -512,53 +570,10 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
             return
         }
         
+        self.regexTestStringTextView.updateHighlights(forMatches: regex.matches(in: self.regexTestStringTextView.string))
+        
         regexCompilationErrorImageView.isHidden = true
         regexCompilationErrorImageView.toolTip = nil
-        
-        let tv = self.regexTestStringTextView
-        let sv = self.regexTestStringTextViewContainingScrollView
-        
-        
-        regex.matches(in: tv.string).forEach { match in
-            // TODO can we safely force-unwrap the text container?
-            
-            match.enumerateCaptureGroups { index, range, content in
-                tv.layoutManager?.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: tv.textContainer!) { rect, stop in
-                    
-                    let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .captureGroup
-                    
-                    
-                    let color = { () -> NSColor in
-                        switch kind {
-                        case .fullMatch: return .fullMatchLightGreen
-                        case .captureGroup: return .captureGroupBlue
-                        }
-                    }()
-                    
-                    let highlightView = LKMatchHighlightView(match: match, frame: rect, color: color, kind: kind)
-                    self.highlightViews.append(highlightView)
-                }
-            }
-        }
-        
-        // Add the highlight views to the scroll view's view hierarchy
-        // This is split up in two parts:
-        // We first add all highlight views for full matches, and then all highlight views for capture groups
-        // This ensures that the highlight views for capture groups are on top of the highlight views for full
-        // matches and we don't have to manually rearrange the view hierarchy
-        
-        let addViews = { (view: NSView) -> Void in
-            // the scroll view's only subview is a NSClipView, which has at least 3 subviews, the last of which is the text view
-            sv.subviews.first!.addSubview(view, positioned: .below, relativeTo: tv)
-        }
-        
-        highlightViews
-            .filter { $0.kind == .fullMatch }
-            .forEach(addViews)
-        
-        highlightViews
-            .filter { $0.kind == .captureGroup }
-            .forEach(addViews)
     }
 }
 

@@ -140,6 +140,7 @@ private class LKMatchHighlightView: NSView {
 
 private class LKScrollView: NSScrollView {
     override var intrinsicContentSize: NSSize {
+        // TODO guard let the text container as well!
         guard
             let textView = self.documentView as? NSTextView,
             let layoutManager = textView.layoutManager
@@ -150,12 +151,33 @@ private class LKScrollView: NSScrollView {
     }
 }
 
+
+/// Subclass of NSTextView that implements:
+/// - the capability to have the text view auto-expand (by overriding `intrinsicContentSize`)
+/// - a placeholder string
 private class LKTextView: NSTextView {
+    
+    // Auto Layout stuff
     override var intrinsicContentSize: NSSize {
         guard let manager = textContainer?.layoutManager else { return .zero }
         
         manager.ensureLayout(for: textContainer!)
         return manager.usedRect(for: textContainer!).size
+    }
+    
+    var placeholder: String = "" {
+        didSet { self.needsDisplay = true } // force AppKit to redraw the text view
+    }
+    
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        
+        if self.string.isEmpty {
+            NSString(string: placeholder).draw(at: NSPoint.init(x: 5, y: -5), withAttributes: [
+                NSAttributedStringKey.font: self.font!,
+                NSAttributedStringKey.foregroundColor: NSColor.gray
+            ])
+        }
     }
 }
 
@@ -178,7 +200,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     // Test String Text View
     private let regexTestStringTextViewTitleLabel = NSTextField(labelWithString: "Test Input")
     private let regexTestStringTextViewContainingScrollView = NSScrollView()
-    private let regexTestStringTextView = NSTextView()
+    private let regexTestStringTextView = LKTextView()
     
     // Settings
     private let regexOptionsButton = NSButton(title: "RegEx Options", target: nil, action: nil)
@@ -242,10 +264,11 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         
         // Regex Entry
         regexTextView.font = NSFont.menlo.with(size: 15)
-        //regexTextView.placeholderString = "Enter regex here..."
+        regexTextView.placeholder = "Enter a regular expression"
         
         // Test String Entry
         regexTestStringTextView.font = NSFont.menlo.with(size: 15)
+        regexTestStringTextView.placeholder = "Enter some test input"
         regexTestStringTextView.isRichText = false
         regexTestStringTextView.backgroundColor = NSColor.clear.withAlphaComponent(0)
         regexTestStringTextView.drawsBackground = true
@@ -381,6 +404,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         let trackingArea = NSTrackingArea(rect: self.view.frame, options: [.mouseMoved, .activeAlways], owner: self, userInfo: nil)
         self.view.addTrackingArea(trackingArea)
     }
+    
     
     // MARK: UI
     

@@ -95,14 +95,13 @@ extension CALayer {
 }
 
 
-private func measure(_ title: String? = nil, _ block: () -> Void) {
+private func measure(_ title: String, _ block: () -> Void) {
     let start = Date()
     
     block()
     
     let end = Date()
-    let msg = title != nil ? " \(title!)" : ""
-    print("[⏱]\(msg) \(end.timeIntervalSince(start))")
+    print("[⏱] '\(title)' - \(end.timeIntervalSince(start))")
 }
 
 

@@ -220,10 +220,16 @@ private class LKMatchResultHighlightingTextView: LKTextView {
         
         
         guard
-            let sv = self.superview?.superview,
+            let sv = self.superview?.superview, // The NSScrollView containing this text view
             let layoutManager = self.layoutManager,
-            let textContainer = self.textContainer
-        else { return }
+            let textContainer = self.textContainer,
+            (sv as? NSScrollView)?.documentView == self
+        else {
+            // The layout manager and the text container are always nonnull
+            // This is just about checking that the view hierarchy is correct
+            print("unable to get the text view's containing scroll view")
+            return
+        }
         
         matches.forEach { match in
             // TODO can we safely force-unwrap the text container?

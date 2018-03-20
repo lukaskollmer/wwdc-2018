@@ -2,6 +2,8 @@
  [Table of contents](Table%20of%20Contents) • [Previous page](@previous) • [Next page](@next)
 
  ## Introduction
+ 
+ [link](#examples)
 
  ### What are Regular Expressions?
  Regular Expressions are string matching patterns
@@ -94,3 +96,30 @@ This regex matches all occurrences of the pattern `hello`. For example, in the s
 
  [docs-special-characters]: https://developer.apple.com/documentation/foundation/nsregularexpression?language=objc#1661042
  */
+
+
+import AppKit
+import PlaygroundSupport
+
+
+
+class LKInlineRegExMatchesView: NSView {
+    init(text: String, matches: [RegEx.Result]) {
+        super.init(frame: .init(x: 0, y: 0, width: 100, height: 50))
+        
+        self.layer = CALayer()
+        self.layer?.backgroundColor = NSColor.red.cgColor
+    }
+    
+    required init?(coder decoder: NSCoder) { fatalError() }
+}
+
+
+//let regex = try! RegEx("luk")
+//let text = "lukas"
+//let matches = regex.matches(in: text)
+//matches.foo()
+
+//let v = LKInlineRegExMatchesView(text: text, matches: matches)
+
+

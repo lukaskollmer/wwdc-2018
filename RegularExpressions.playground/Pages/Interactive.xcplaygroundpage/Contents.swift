@@ -34,32 +34,32 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  - make a regex to filter all swift files in a list of filenames
  */
 
-extension NSFont {
-    fileprivate func with(size: CGFloat) -> NSFont {
+private extension NSFont {
+    func with(size: CGFloat) -> NSFont {
         return NSFont(name: self.fontName, size: size)!
     }
     
-    fileprivate static let menlo = NSFont(name: "Menlo", size: NSFont.systemFontSize)!
+    static let menlo = NSFont(name: "Menlo", size: NSFont.systemFontSize)!
 }
 
-extension NSAppearance {
-    fileprivate static let dark = NSAppearance(named: NSAppearance.Name.vibrantDark)!
+private extension NSAppearance {
+    static let dark = NSAppearance(named: NSAppearance.Name.vibrantDark)!
 }
 
-extension NSEdgeInsets {
-    fileprivate init(allSides value: CGFloat) {
+private extension NSEdgeInsets {
+    init(allSides value: CGFloat) {
         self.init(top: value, left: value, bottom: value, right: -value)
     }
 }
 
-extension NSColor {
-    fileprivate static let fullMatchLightGreen = NSColor(hexString: "#CCE7A5")!
-    fileprivate static let captureGroupBlue = NSColor(hexString: "#85C3FA")!
+private extension NSColor {
+    static let fullMatchLightGreen = NSColor(hexString: "#CCE7A5")!
+    static let captureGroupBlue = NSColor(hexString: "#85C3FA")!
 }
 
 // https://stackoverflow.com/a/25952895/2513803
-extension NSImage {
-    fileprivate func tinted(withColor tint: NSColor) -> NSImage {
+private extension NSImage {
+    func tinted(withColor tint: NSColor) -> NSImage {
         guard let tinted = self.copy() as? NSImage else { return self }
         tinted.lockFocus()
         tint.set()
@@ -72,23 +72,23 @@ extension NSImage {
     }
 }
 
-extension NSTextView {
+private extension NSTextView {
     @available(*, deprecated, message: "thefuck you're doing?")
-    fileprivate var lk_placeholderString: String? {
+    var lk_placeholderString: String? {
         get { return self.perform(NSSelectorFromString("placeholderString")).takeUnretainedValue() as? String }
         set { self.perform(NSSelectorFromString("setPlaceholderString:"), with: newValue) }
     }
 }
 
 
-extension String {
-    fileprivate func substring(withRange range: NSRange) -> String {
+private extension String {
+    func substring(withRange range: NSRange) -> String {
         return NSString(string: self).substring(with: range)
     }
 }
 
-extension CALayer {
-    fileprivate convenience init(backgroundColor color: NSColor) {
+private extension CALayer {
+    convenience init(backgroundColor color: NSColor) {
         self.init()
         self.backgroundColor = color.cgColor
     }

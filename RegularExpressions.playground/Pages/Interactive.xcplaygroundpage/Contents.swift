@@ -166,7 +166,7 @@ private class LKTextView: NSTextView {
     }
     
     var placeholder: String = "" {
-        didSet { self.needsDisplay = true } // force AppKit to redraw the text view
+        didSet { self.needsDisplay = true } // tell AppKit to redraw the text view
     }
     
     override func draw(_ dirtyRect: NSRect) {

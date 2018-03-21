@@ -29,6 +29,9 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  - it seems like the left social button isn't quite on the same line as the border of the text view // FIXME
  - the options ui should not appear on top of the text view, that'd make it easier to see how changing the options will influence the matches
  - what about a "replace" feature?
+ - add some separator between matches that are directly next to each other (eg /o/ matching against 'foo')
+   or give the match highlight views a border on the left and right edge?
+   this could also be fixed by having alternating colors for individual matches
  
  IDEAS:
  - make a regex to filter all swift files in a list of filenames
@@ -107,34 +110,6 @@ private func measure(_ title: String, _ block: () -> Void) {
 
 private let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
 
-/// NSView subclass to highlight part of a regex match in a text view
-private class LKMatchHighlightView: NSView {
-    
-    enum Kind {
-        case fullMatch
-        case captureGroup
-    }
-    
-    let match: RegEx.Result
-    let kind: Kind
-    
-    init(match: RegEx.Result, frame: NSRect, color: NSColor, kind: Kind) {
-        self.kind = kind
-        self.match = match
-        super.init(frame: frame)
-        
-        // Setup background color
-        self.layer = CALayer(backgroundColor: .white)
-        
-        let colorView = NSView()
-        colorView.layer = CALayer(backgroundColor: color)
-        self.addSubview(colorView)
-        colorView.edgesToSuperview()
-    }
-    
-    required init?(coder decoder: NSCoder) { fatalError() }
-}
-
 
 // Subclasses of NSScrollView and NSTextView to implement an auto-expanding multiline text view
 
@@ -183,7 +158,38 @@ private class LKTextView: NSTextView {
 
 
 /// LKTextView subclass that can highlight the matches of a regular expression
+// TODO: Provide extensions for Array<RegEx.Result> that return this view highlighting the matches in the initial string
+// That'd allow us to visualize regex matches inline in the playground pages
+// something like this: `regex.matches(in: "").preview`
 private class LKMatchResultHighlightingTextView: LKTextView {
+    
+    /// NSView subclass to highlight part of a regex match in a text view
+    private class LKMatchHighlightView: NSView {
+        
+        enum Kind {
+            case fullMatch
+            case captureGroup
+        }
+        
+        let match: RegEx.Result
+        let kind: Kind
+        
+        init(match: RegEx.Result, frame: NSRect, color: NSColor, kind: Kind) {
+            self.kind = kind
+            self.match = match
+            super.init(frame: frame)
+            
+            // Setup background color
+            self.layer = CALayer(backgroundColor: .white)
+            
+            let colorView = NSView()
+            colorView.layer = CALayer(backgroundColor: color)
+            self.addSubview(colorView)
+            colorView.edgesToSuperview()
+        }
+        
+        required init?(coder decoder: NSCoder) { fatalError() }
+    }
     
     // MARK: Match highlighting
     private var highlightViews = [LKMatchHighlightView]()

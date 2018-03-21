@@ -1,4 +1,4 @@
-import Foundation
+LKVisualRegExViewController.show()
 Playground.currentPage = "Capture Groups"
 /*:
  [Table of Contents](Table%20of%20Contents) • [Previous page](@previous) • [Next page](@next)
@@ -22,9 +22,10 @@ Playground.currentPage = "Capture Groups"
  **Example**
  Extract the return type from a function signature
  */
-let regex = try! RegEx(/*func [a-zA-Z]+\(\) -> ([A-Za-z]+)*/)
-let match = regex.matches(in: "func foo() -> String").first!
-let returnType = match.contents(ofCaptureGroup: 1)
+let regex = try! RegEx("func [a-zA-Z]+\\(\\) -> ([A-Za-z]+)")
+let matches = regex.matches(in: "func foo() -> String")
+let returnType = matches[0].contents(ofCaptureGroup: 1)
+matches.preview // Click the Quick Look button in the right sidebar to view a visualization of the matches
 /*:
  ### Template Substitution
 
@@ -35,25 +36,13 @@ let returnType = match.contents(ofCaptureGroup: 1)
  **Example**
  Regex that matches a string, captures a last and first name and reverses it
  */
-let nameRegex = try! RegEx(/*(\w+), (\w+)*/)
+let nameRegex = try! RegEx("(\\w+), (\\w+)")
 nameRegex.replace(in: "Tennant, David", withTemplate: "$2 $1")
 
 
-/*:
- ### Named Capture Groups
- You can also name the individual capture groups
 
- The syntax for this is the following (`GROUP_NAME` being the name of that capture group and `x` being the some pattern you want to match
- ```
- (?<GROUP_NAME>x)
- ```
-
- > this is a relatively new feature and might not yet be fully supported by all regex implementations
-
- **Example**
- In the example below, the capture group indexes `1` and `2` are redundant with the capture group names `last` and `first`
- */
-let nameRegex2 = try! RegEx(/*(?<last>\w+), (?<first>\w+)*/)
+let nameRegex2 = try! RegEx("(?<last>\\w+), (?<first>\\w+)")
 nameRegex2.replace(in: "Tennant, David", withTemplate: "${first} ${last}")
 nameRegex2.replace(in: "Tennant, David", withTemplate: "$2 $1")
+
 

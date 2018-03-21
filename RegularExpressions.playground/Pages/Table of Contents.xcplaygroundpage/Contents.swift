@@ -1,7 +1,7 @@
 /*:
  # Regular Expressions
 
- By [Lukas Kollmer][Lukas Kollmer] • Spring 2018
+ By [Lukas Kollmer](https://lukaskollmer.me) • Spring 2018
 
  ## Table of Contents
  - [Introduction](Introduction)
@@ -11,19 +11,9 @@
 
  ## Meta
  - This playground was developed and tested with Xcode 9.2 (Swift 4.0.3) TODO UPDATE
- - The `RegEx` class uses in this playground is a light wrapper around [`NSRegularExpression`][NSRegularExpression] and its related APIs, to make working with regular expressions in swift easier
- 
- ## 3rd party dependencies used in this playground:
- - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) AutoLayout syntactic sugar
- - [github.com/thii/SwiftHEXColors](https://github.com/thii/SwiftHEXColors) NSColor hex initializer
-
- > Since Swift doesn't support unescaped string literals, this playground uses a little hack to keep regular expressions simple and easy to read.
- > The `RegEx` class has two initializers
- - `init(_ pattern: String, options: RegEx.Options = [])` takes a string, in which backslashes need to be escaped)
- - `init(line: Int = #line, column: Int = #column)` this initializer expects a comment between its parenteses. it reads the source code of the calling file and extracts the contents of that comment, which will be used as the regex's pattern. the obvious advantage of this approach is that you don't need to escape any characters in the pattern and can for example write `\w` instead of `\\w`. This makes it a lot easier to understand the patterns, especially for beginners
-
- [Lukas Kollmer]:       https://lukaskollmer.github.io
- [NSRegularExpression]: https://developer.apple.com/documentation/foundation/nsregularexpression
+ - 3rd party dependencies used in this playground:
+   - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) AutoLayout syntactic sugar
+   - [github.com/thii/SwiftHEXColors](https://github.com/thii/SwiftHEXColors) NSColor hex initializer
 
  [Next page](@next)
 */

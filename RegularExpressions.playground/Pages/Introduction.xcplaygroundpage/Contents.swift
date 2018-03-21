@@ -1,3 +1,4 @@
+LKVisualRegExViewController.show()
 /*:
  [Table of contents](Table%20of%20Contents) • [Previous page](@previous) • [Next page](@next)
 

@@ -1,5 +1,6 @@
-import Foundation
-Playground.currentPage = "Character Sets"
+//import Foundation
+//Playground.currentPage = "Character Sets"
+LKVisualRegExViewController.show()
 /*:
  [Table of Contents](Table%20of%20Contents) • [Previous page](@previous) • [Next page](@next)
 
@@ -37,15 +38,16 @@ regex1.matches(in: "abc123xyz").count
 
 /*:
  ### Inverted Character Sets
- You can invert a character set by inserting a `^` at the beginning. In this context, the `^` does not match the beginning of the input.
+ You can invert a character set by inserting a `^` at the beginning. In this context, the `^` does not match the beginning of the input, but instead all characters that are not in the character set
 
 * Callout(Example):
 This is the reverse of the previous example: instead of matching all lowercase parts of a string, we match everything that is *not* lowercase\
 The updated regex now matches "123", because that's the only part of the string that doesn't consist of lowercase letters
-> Change the string "abc123xyz" by adding other non-lowercase characters. It will match these new charcters as well.
+> Change the string "abc123xyz" by adding other non-lowercase characters. It will match these new charcters as well.\
+Click "Show Result" in the right sidebar to get a live inline preview of the matches
  */
 let regex2 = try! RegEx("[^a-z]+")
-regex2.matches(in: "abc123xyz") // TODO make regex matches print something nice if passed to print
+regex2.matches(in: "abc123xyz").preview
 
 
 /*:

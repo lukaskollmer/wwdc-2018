@@ -27,7 +27,7 @@
 - have unused inline nsbutton objects that can be shown by clicking the preview square icon thing and then clicking the button updates the visualizer? (update: doesn't seem to work :/)
 - give each section/example a unique number, then have a text field/selection thing in the visualizer where you enter that number to load the example
 - completely ditch Xcode's rendered preview, require the live view be run at full width and show our own rendering of the content. that'd also allow inline buttons that control the visualizer and we wouldn't need to reload the visualizer for every new page
-- a regex match function that returns a text view w/ highlighted matches that could be shown as a inline view and update when the regex changes?
+- a regex match function that returns a text view w/ highlighted matches that could be shown as a inline view and update when the regex changes? - FUCK YEAH
 
 ## Technologies used in this playground
 - AppKit
@@ -38,6 +38,7 @@
 - NSUserDefaults
 - NSPopover
 - NSViewController
+- Swift Playgrounds Inline View previews
 
 ## License
 MIT @ [Lukas Kollmer](https://lukaskollmer.me)

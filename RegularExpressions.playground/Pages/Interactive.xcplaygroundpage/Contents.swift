@@ -68,6 +68,12 @@ private extension NSEdgeInsets {
     }
 }
 
+private extension NSRect {
+    func offset(by size: NSSize) -> NSRect {
+        return self.offsetBy(dx: size.width, dy: size.height)
+    }
+}
+
 private extension NSColor {
     static let fullMatchLightGreen = NSColor(hexString: "#CCE7A5")!
     static let captureGroupBlue = NSColor(hexString: "#85C3FA")!
@@ -261,7 +267,9 @@ private class LKMatchResultHighlightingTextView: LKTextView {
                         }
                     }()
                     
-                    self.highlightViews.append(LKMatchHighlightView(match: match, frame: rect, color: color, kind: kind))
+                    let frame = rect.offset(by: self.textContainerInset)
+                    
+                    self.highlightViews.append(LKMatchHighlightView(match: match, frame: frame, color: color, kind: kind))
                 }
             }
         }
@@ -850,6 +858,7 @@ extension Array where Element == RegEx.Result {
         let tv = LKMatchResultHighlightingTextView(frame: NSRect(x: 0, y: 0, width: sv.contentSize.width, height: sv.contentSize.height))
         tv.font = .monospaced
         tv.backgroundColor = NSColor.clear.withAlphaComponent(0)
+        tv.textContainerInset = NSSize(width: 5, height: 5)
         
         if let match = first {
             tv.string = match.initialString
@@ -867,6 +876,9 @@ extension Array where Element == RegEx.Result {
         return sv
     }
 }
+
+
+try! RegEx("[a-z]+").matches(in: "abc123xyz").preview
 
 
 

@@ -20,14 +20,18 @@ LKVisualRegExViewController.show()
  Regular Expressions consist of "simple" and "special" characters: Simple characters are characters that are matched literally, special characters offer you a way to "refine" your pattern and convey some additional information and conditions.
 
  ### Simple Characters
+ 
+ - Example: Matching the word "hello"
+ */
+try! RegEx("hello").matches(in: "hello world").preview
+ 
+//```
+//hello
+//```
+//This regex matches all occurrences of the pattern `hello`. For example, in the string "hello world", it matches the first 5 characters.
 
-```
-hello
-```
-This regex matches all occurrences of the pattern `hello`. For example, in the string "hello world", it matches the first 5 characters.
 
-
-
+/*:
  ### Special Characters
 
  This might seem a bit overwhelming at a first glance, but chances are you're just going to work with a rather limited subset. We're also going to explore a bunch of them in depth over the next couple of chapters. And there's lots of examples.

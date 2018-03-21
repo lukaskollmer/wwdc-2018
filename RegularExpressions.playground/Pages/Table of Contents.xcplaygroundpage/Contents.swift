@@ -1,13 +1,18 @@
+LKVisualRegExViewController.show()
 /*:
  # Regular Expressions
 
  By [Lukas Kollmer](https://lukaskollmer.me) • Spring 2018
 
  ## Table of Contents
- - [Introduction](Introduction)
- - [Capturing Groups](Capturing%20Groups)
- - [Character Sets](Character%20Sets)
- - todo
+ - Introduction
+ - Capturing Groups
+ - Character Sets
+ 
+ 
+ ## Using this playground
+ TODO
+ 
 
  ## Meta
  - This playground was developed and tested with Xcode 9.2 (Swift 4.0.3) TODO UPDATE
@@ -24,7 +29,7 @@ import Foundation
 Playground.currentPage = "Table of Contents"
 
 let regeximg = try! RegEx(/*(\d+)x(\d+)*/)
-regeximg.matches(in: "44x55, 10x12").forEach { print($0) }
+//regeximg.matches(in: "44x55, 10x12").forEach { print($0) }
 
 /*
 postfix operator ...=>
@@ -118,9 +123,6 @@ let combinations: [(Int, String)] = sentences.map { s -> (Int, String) in
     }.sorted { $0.0 < $1.0 }
 
 combinations...=>
-
-
-
 
 
 */

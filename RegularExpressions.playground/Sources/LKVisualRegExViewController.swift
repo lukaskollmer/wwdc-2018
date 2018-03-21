@@ -348,6 +348,7 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
 
 public extension LKVisualRegExViewController {
     static func show() {
+        NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
         PlaygroundPage.current.liveView = LKVisualRegExViewController()
     }
 }

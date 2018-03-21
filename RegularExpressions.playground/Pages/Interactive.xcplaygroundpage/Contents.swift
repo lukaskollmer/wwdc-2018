@@ -37,12 +37,25 @@ NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
  - make a regex to filter all swift files in a list of filenames
  */
 
+
+
 private extension NSFont {
     func with(size: CGFloat) -> NSFont {
         return NSFont(name: self.fontName, size: size)!
     }
     
-    static let menlo = NSFont(name: "Menlo", size: 15)!
+    func with(sizeAdvancedBy amount: CGFloat) -> NSFont {
+        return NSFont(name: self.fontName, size: self.pointSize.advanced(by: amount))!
+    }
+    
+    static var monospaced: NSFont = {
+        if let url = Bundle.main.url(forResource: "SFMono-Regular", withExtension: "otf") {
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+            return NSFont(name: "SFMono-Regular", size: 15)!
+        } else {
+            return NSFont(name: "Menlo", size: 15)!
+        }
+    }()
 }
 
 private extension NSAppearance {
@@ -345,11 +358,11 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         subtitleLabel.alignment = .center
         
         // Regex Entry
-        regexTextView.font = NSFont.menlo.with(size: 15)
+        regexTextView.font = .monospaced
         regexTextView.placeholder = "Enter a regular expression"
         
         // Test String Entry
-        regexTestStringTextView.font = .menlo
+        regexTestStringTextView.font = .monospaced
         regexTestStringTextView.placeholder = "Enter some test input"
         regexTestStringTextView.isRichText = false
         regexTestStringTextView.backgroundColor = NSColor.clear.withAlphaComponent(0)
@@ -638,7 +651,7 @@ private class LKMatchInfoViewController: NSViewController {
         """
         
         let label = NSTextField(labelWithString: content)
-        label.font = .menlo
+        label.font = NSFont.monospaced.with(sizeAdvancedBy: -2)
         label.isSelectable = true
         
         self.view.addSubview(label)
@@ -835,7 +848,7 @@ extension Array where Element == RegEx.Result {
         let sv = NSScrollView(frame: .init(x: 0, y: 0, width: 300, height: 100))
         
         let tv = LKMatchResultHighlightingTextView(frame: NSRect(x: 0, y: 0, width: sv.contentSize.width, height: sv.contentSize.height))
-        tv.font = .menlo
+        tv.font = .monospaced
         tv.backgroundColor = NSColor.clear.withAlphaComponent(0)
         
         if let match = first {

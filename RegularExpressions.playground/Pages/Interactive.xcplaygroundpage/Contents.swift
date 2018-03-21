@@ -42,7 +42,7 @@ private extension NSFont {
         return NSFont(name: self.fontName, size: size)!
     }
     
-    static let menlo = NSFont(name: "Menlo", size: NSFont.systemFontSize)!
+    static let menlo = NSFont(name: "Menlo", size: 15)!
 }
 
 private extension NSAppearance {
@@ -182,10 +182,9 @@ private class LKMatchResultHighlightingTextView: LKTextView {
             // Setup background color
             self.layer = CALayer(backgroundColor: .white)
             
-            let colorView = NSView()
+            let colorView = NSView(frame: self.bounds)
             colorView.layer = CALayer(backgroundColor: color)
             self.addSubview(colorView)
-            colorView.edgesToSuperview()
         }
         
         required init?(coder decoder: NSCoder) { fatalError() }
@@ -273,6 +272,7 @@ private class LKMatchResultHighlightingTextView: LKTextView {
         highlightViews
             .filter { $0.kind == .captureGroup }
             .forEach(addViews)
+        
     }
     
     
@@ -349,7 +349,7 @@ class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         regexTextView.placeholder = "Enter a regular expression"
         
         // Test String Entry
-        regexTestStringTextView.font = NSFont.menlo.with(size: 15)
+        regexTestStringTextView.font = .menlo
         regexTestStringTextView.placeholder = "Enter some test input"
         regexTestStringTextView.isRichText = false
         regexTestStringTextView.backgroundColor = NSColor.clear.withAlphaComponent(0)
@@ -823,6 +823,38 @@ private struct Defaults {
 }
 
 PlaygroundPage.current.liveView = LKVisualRegExViewController()
+
+
+extension Array where Element == RegEx.Result {
+    /// `Array<RegEx.Result>` extension to provide an inline preview of regex matches
+    /// ````
+    /// let regex = try! RegEx("[A-Z]+")
+    /// regex.matches(in: "abc123xyz").preview
+    /// ````
+    var preview: NSView {
+        let sv = NSScrollView(frame: .init(x: 0, y: 0, width: 300, height: 100))
+        
+        let tv = LKMatchResultHighlightingTextView(frame: NSRect(x: 0, y: 0, width: sv.contentSize.width, height: sv.contentSize.height))
+        tv.font = .menlo
+        tv.backgroundColor = NSColor.clear.withAlphaComponent(0)
+        
+        if let match = first {
+            tv.string = match.initialString
+        } else {
+            // Collection of empty results.
+            // This is a bit problematic: we get the string we were matched against from the first match
+            // meaning that if there were 0 matches, we can't get the string we were matched against
+            tv.string = "(no matches)"
+            tv.textColor = .gray
+        }
+        
+        sv.documentView = tv
+        tv.updateHighlights(forMatches: self)
+        
+        return sv
+    }
+}
+
 
 
 //: [Next](@next)

@@ -56,3 +56,6 @@ hexRegex.matches("12")
 hexRegex.matches("12e4ffa")
 hexRegex.matches("12e4ffax")
 hexRegex.matches("12e4gffa")
+
+
+try! RegEx("[a-z]+").matches(in: "abc123xyz").preview

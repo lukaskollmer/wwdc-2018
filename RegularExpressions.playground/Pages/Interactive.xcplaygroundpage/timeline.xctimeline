@@ -2,5 +2,15 @@
 <Timeline
    version = "3.0">
    <TimelineItems>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Developer/wwdc-2018/RegularExpressions.playground/Pages/Interactive.xcplaygroundpage#CharacterRangeLen=9&amp;CharacterRangeLoc=20853&amp;EndingColumnNumber=6&amp;EndingLineNumber=504&amp;StartingColumnNumber=0&amp;StartingLineNumber=501&amp;Timestamp=543335243.766459"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Developer/wwdc-2018/RegularExpressions.playground/Pages/Interactive.xcplaygroundpage#CharacterRangeLen=1&amp;CharacterRangeLoc=20853&amp;EndingColumnNumber=0&amp;EndingLineNumber=502&amp;StartingColumnNumber=0&amp;StartingLineNumber=501&amp;Timestamp=543335243.767005"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
    </TimelineItems>
 </Timeline>

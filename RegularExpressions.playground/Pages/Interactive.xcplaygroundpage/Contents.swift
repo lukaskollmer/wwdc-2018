@@ -238,8 +238,6 @@ private class LKMatchResultHighlightingTextView: LKTextView {
         }
         
         matches.forEach { match in
-            // TODO can we safely force-unwrap the text container?
-            
             match.enumerateCaptureGroups { index, range, content in
                 layoutManager.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: textContainer) { rect, stop in
                     let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .captureGroup

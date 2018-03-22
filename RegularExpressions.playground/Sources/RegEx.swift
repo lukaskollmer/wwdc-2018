@@ -146,50 +146,48 @@ public struct RegEx {
         // Instead of forwarding the `replace` call to -[NSRegularExpression stringByReplacingMatchesInString:options:range:withTemplate:]
         // we implement parts of this ourselves to detect and proprtly handle named capture groups.
         // Why? NSRegularExpression doesn't yet fully support named capture (you can use named groups in the regex and the matches, but template substitution will ignore named groups). See also DTS #686210772 and radar://38426586
-
+        
         typealias Substitution = (groupName: String, beginning: Int, end: Int)
-
-        var string_ = NSString(string: string)
-
+        
+        let retval = NSMutableString(string: string)
+        
         for match in self.matches(in: string).reversed() {
-            var result = NSString(string: self.regex.stringByReplacingMatches(in: string, options: [], range: match.range, withTemplate: template))
-
+            let result = NSMutableString(string: self.regex.stringByReplacingMatches(in: string, options: [], range: match.range, withTemplate: template))
+            
             var substitutions = [Substitution]()
-
+            
             var lastPosition = 0
             while lastPosition <= result.length {
                 let scanner = Scanner(string: result as String)
-
+                
                 scanner.scanLocation = lastPosition
                 scanner.scanUpTo("${", into: nil)
-
+                
                 if scanner.isAtEnd {
                     break
                 }
-
+                
                 let startIndex = scanner.scanLocation
                 scanner.scanLocation += 2
-
+                
                 var groupName: NSString?
                 scanner.scanUpTo("}", into: &groupName)
                 lastPosition = scanner.scanLocation
-
+                
                 if let name = groupName as String? {
                     substitutions.append((name, startIndex, lastPosition + 1))
                 }
             }
-
+            
             for sub in substitutions.reversed() {
                 let range = NSRange(location: sub.beginning, length: sub.end - sub.beginning)
-                result = result.replacingCharacters(in: range, with: match[sub.groupName]) as NSString
+                result.replaceCharacters(in: range, with: match[sub.groupName])
             }
-
-            string_ = string_.replacingCharacters(in: match.range, with: result as String) as NSString
+            
+            retval.replaceCharacters(in: match.range, with: result as String)
         }
-
-        return string_ as String
-
-
+        
+        return retval as String
     }
 
     public func split(_ string: String) -> [String] {

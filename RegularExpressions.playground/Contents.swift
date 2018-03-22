@@ -26,8 +26,8 @@ LKVisualRegExViewController.show()
  3. a powerful live regex visualizer displayed in the playground's live view
  
  > There is a bug in Xcode where compiling complex playgrounds can fail multiple times in a row, even though the playground's source code doesn't contain any compile-time errors (rdar://38615696).\
- If that happens, you have to manually click the "Run" button to trigger a new compilation.\
- I'm very sorry about this, but sadly there is nothing I can do to prevent it from happening.
+If that happens, you have to manually click the "Run" button to trigger a new compilation.\
+I'm very sorry about this, but sadly there is nothing I can do to prevent it from happening.
  
  ### About the RegEx type
  The `RegEx` struct is a light wrapper around [`NSRegularExpression`](https://developer.apple.com/documentation/foundation/nsregularexpression) that implements a swift-friendly API and some helper methods, as well as a couple of additional features.\
@@ -215,16 +215,16 @@ try! RegEx("\\w+ (?<last>\\w+)").replace(in: "Lukas Kollmer", withTemplate: "Luc
 try! RegEx("[A-Z]").matches(in: "I Am The Doctor").preview
 /*:
  - Callout(Exercice): **Matching hexadecimal numbers**\
- Create a regular expression that checks whether a string is a hexadecimal number.\
- Reminder: Hexadecimal numbers consist of the digits 0-9, as well as the letters a-f.\
- Here are some numbers you can check your regex against:\
- `123`\
- `123a`\
- `caffbd6e`\
- `-aab123fc`\
- `12ff6x1`\
- `15ffacex`\
- (Only the first 4 are valid hexadecimal numbers)
+Create a regular expression that checks whether a string is a hexadecimal number.\
+Reminder: Hexadecimal numbers consist of the digits 0-9, as well as the letters a-f.\
+Here are some numbers you can check your regex against:\
+`123`\
+`123a`\
+`caffbd6e`\
+`-aab123fc`\
+`12ff6x1`\
+`15ffacex`\
+(Only the first 4 are valid hexadecimal numbers)
  > **Hints**:\
  • Use `^` and `$` to make sure the entire string matches the pattern\
  • Don't forget to support negative numbers\

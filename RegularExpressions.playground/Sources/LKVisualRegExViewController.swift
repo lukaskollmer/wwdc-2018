@@ -105,6 +105,7 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         // Regex Entry
         regexTextView.font = .monospaced
         regexTextView.placeholder = "Enter a regular expression"
+        regexTextView.isRichText = false
         
         // Test String Entry
         regexTestStringTextView.font = .monospaced

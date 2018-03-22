@@ -37,8 +37,9 @@ public extension NSFont {
     }
     
     static var monospaced: NSFont = {
-        if let url = Bundle.main.url(forResource: "SFMono-Regular", withExtension: "otf") {
-            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        if
+            let url = Bundle.main.url(forResource: "SFMono-Regular", withExtension: "otf"),
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil) {
             return NSFont(name: "SFMono-Regular", size: 15)!
         } else {
             return NSFont(name: "Menlo", size: 15)!

@@ -1,4 +1,4 @@
-//LKVisualRegExViewController.show()
+LKVisualRegExViewController.show()
 
 /*
  TODO
@@ -26,8 +26,8 @@
  3. a powerful live regex visualizer displayed in the playground's live view
  
  > There is a bug in Xcode where compiling complex playgrounds can fail multiple times in a row, even though the playground's source code doesn't contain any compile-time errors (rdar://38615696).\
-If that happens, you have to manually click the "Run" button to trigger a new compilation.\
-I'm very sorry about this, but sadly there is nothing I can do to prevent it from happening.
+ If that happens, you have to manually click the "Run" button to trigger a new compilation.\
+ I'm very sorry about this, but sadly there is nothing I can do to prevent it from happening.
  
  ### About the RegEx type
  The `RegEx` struct is a light wrapper around [`NSRegularExpression`](https://developer.apple.com/documentation/foundation/nsregularexpression) that implements a swift-friendly API and some helper methods, as well as a couple of additional features.\
@@ -43,8 +43,8 @@ try! RegEx("hello").matches(in: "hello world").preview // click the Quick Look i
  ### Meta
  - This playground was developed and tested with Xcode 9.2 (Swift 4.0.3)
  - 3rd party dependencies used in this playground:
-   - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) AutoLayout syntactic sugar
-   - [github.com/thii/SwiftHEXColors](https://github.com/thii/SwiftHEXColors) NSColor hex initializer
+ - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) AutoLayout syntactic sugar
+ - [github.com/thii/SwiftHEXColors](https://github.com/thii/SwiftHEXColors) NSColor hex initializer
  */
 /*:
  ## What are regular expressions
@@ -57,8 +57,8 @@ try! RegEx("hello").matches(in: "hello world").preview // click the Quick Look i
  ### Simple Characters
  
  - Example:\
-**Matching the string "hello" literally**\
-As you can see in the Quick Look preview, the following regex simply matches every "o" in the text "Doctor Who"*/
+ **Matching the string "hello" literally**\
+ As you can see in the Quick Look preview, the following regex simply matches every "o" in the text "Doctor Who"*/
 try! RegEx("o").matches(in: "Doctor Who").preview
 /*:
  ### Special Characters
@@ -211,46 +211,46 @@ try! RegEx("\\w+ (?<last>\\w+)").replace(in: "Lukas Kollmer", withTemplate: "Luc
 //:Create a regular expression that matches all uppercase characters in a string. Use a character set to define uppercase characters
 /*:
  - Callout(Solution):\
-`[A-Z]`*/
+ `[A-Z]`*/
 try! RegEx("[A-Z]").matches(in: "I Am The Doctor").preview
 /*:
  - Callout(Exercice): **Matching hexadecimal numbers**\
-Create a regular expression that checks whether a string is a hexadecimal number.\
-Reminder: Hexadecimal numbers consist of the digits 0-9, as well as the letters a-f.\
-Here are some numbers you can check your regex against:\
-`123`\
-`123a`\
-`caffbd6e`\
-`-aab123fc`\
-`12ff6x1`\
-`15ffacex`\
-(Only the first 4 are valid hexadecimal numbers)
+ Create a regular expression that checks whether a string is a hexadecimal number.\
+ Reminder: Hexadecimal numbers consist of the digits 0-9, as well as the letters a-f.\
+ Here are some numbers you can check your regex against:\
+ `123`\
+ `123a`\
+ `caffbd6e`\
+ `-aab123fc`\
+ `12ff6x1`\
+ `15ffacex`\
+ (Only the first 4 are valid hexadecimal numbers)
  > **Hints**:\
-• Use `^` and `$` to make sure the entire string matches the pattern\
-• Don't forget to support negative numbers\
-• Be sure to check the "Anchors match lines" option in the live view's "RegEx Options" menu. If enabled, `^` and `$` will match the beginning and end of lines, instead of the beginning and end of the entire text
+ • Use `^` and `$` to make sure the entire string matches the pattern\
+ • Don't forget to support negative numbers\
+ • Be sure to check the "Anchors match lines" option in the live view's "RegEx Options" menu. If enabled, `^` and `$` will match the beginning and end of lines, instead of the beginning and end of the entire text
  */
 /*:
  - Callout(Solution):\
-`^-?[0-9a-f]+$`\
-_(Copy the pattern and sample numbers from above into the live view to see the regex in action)_\
-\
-**Explanation**:\
-• We use `^` and `$` make sure that the entire string matches the pattern\
-• We use the `?` operator to match between 0 and 1 minus signs (`-`)\
-• We use a character set to specify the valid characters for a hexadecimal number\
-• We use the `+` operator to match as many characters as possible*/
+ `^-?[0-9a-f]+$`\
+ _(Copy the pattern and sample numbers from above into the live view to see the regex in action)_\
+ \
+ **Explanation**:\
+ • We use `^` and `$` make sure that the entire string matches the pattern\
+ • We use the `?` operator to match between 0 and 1 minus signs (`-`)\
+ • We use a character set to specify the valid characters for a hexadecimal number\
+ • We use the `+` operator to match as many characters as possible*/
 /*:
  ### Capture group exercises
  
  - Callout(Exercice): **Extract the return type from a Swift function signature**\
-Create a regular expression that matches a swift function signature and captures the return type\
-Example of a valid function signature:\
-`func foo() -> String`
+ Create a regular expression that matches a swift function signature and captures the return type\
+ Example of a valid function signature:\
+ `func foo() -> String`
  > **Hints**:\
-• Use character sets to define valid characters for the function name and the return type name\
-• Keep in mind that function and typenames can contain both lower- and uppercase characters. You don't have to take numbers into account\
-• Don't forget that you have to escape parentheses in your pattern in order to match them literally
+ • Use character sets to define valid characters for the function name and the return type name\
+ • Keep in mind that function and typenames can contain both lower- and uppercase characters. You don't have to take numbers into account\
+ • Don't forget that you have to escape parentheses in your pattern in order to match them literally
  */
 /*:
  - Callout(Solution):\
@@ -376,3 +376,4 @@ try! RegEx("func [a-zA-Z]+\\(\\) -> ([a-zA-Z]+)").matches(in: "func foo() -> Str
  
  
  */
+

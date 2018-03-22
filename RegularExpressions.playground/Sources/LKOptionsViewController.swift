@@ -12,7 +12,7 @@ public class LKOptionsViewController: NSViewController {
     public required init?(coder: NSCoder) { fatalError() }
     
     override public func loadView() {
-        self.view = NSView(frame: NSRect.init(x: 0, y: 0, width: 400, height: 0))
+        self.view = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 0))
         
         let container = NSView()
         view.addSubview(container)

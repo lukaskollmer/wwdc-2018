@@ -49,7 +49,7 @@ public class LKTextView: NSTextView {
         super.draw(dirtyRect)
         
         if self.string.isEmpty {
-            NSString(string: placeholder).draw(at: NSPoint.init(x: 5, y: -5), withAttributes: [
+            NSString(string: placeholder).draw(at: NSPoint(x: 5, y: -5), withAttributes: [
                 NSAttributedStringKey.font: self.font!,
                 NSAttributedStringKey.foregroundColor: NSColor.gray
                 ])

@@ -144,7 +144,7 @@ public struct RegEx {
     /// String substitution w/ named capture support
     public func replace(in string: String, withTemplate template: String) -> String {
         // Instead of forwarding the `replace` call to -[NSRegularExpression stringByReplacingMatchesInString:options:range:withTemplate:]
-        // we implement parts of this ourselves to detect named capture groups and properly handle them.
+        // we implement parts of this ourselves to detect and proprtly handle named capture groups.
         // Why? NSRegularExpression doesn't yet fully support named capture (you can use named groups in the regex and the matches, but template substitution will ignore named groups). See also DTS #686210772 and radar://38426586
 
         typealias Substitution = (groupName: String, beginning: Int, end: Int)
@@ -215,10 +215,8 @@ public struct RegEx {
         let namedGroupsRegex = try! RegEx("(?<!\\\\) (?: \\((?:\\?<(?<\(groupName)>\\w+)>)? .*? \\) )", options: [.allowCommentsAndWhitespace])
         
         return namedGroupsRegex.matches(in: self.regex.pattern)
-            .filter { match in
-                let range = match.result.range(withName: groupName)
-                return range.location != .max && range.length > 0
-            }.map { $0.contents(ofCaptureGroup: groupName) }
+            .filter { $0.result.range(withName: groupName) != NSRange(location: NSNotFound, length: 0) }
+            .map { $0.contents(ofCaptureGroup: groupName) }
     }
 
 }

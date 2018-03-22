@@ -9,7 +9,7 @@ extension Array where Element == RegEx.Result {
     public var preview: NSView {
         // NOTE: We can't use auto layout in this view because Xcode's inline preview only renders views w/ a fixed layout // TODO file radar
         
-        let sv = NSScrollView(frame: .init(x: 0, y: 0, width: 300, height: 28))
+        let sv = NSScrollView(frame: NSRect(x: 0, y: 0, width: 300, height: 28))
         let tv = LKMatchResultHighlightingTextView(frame: NSRect(x: 0, y: 0, width: sv.contentSize.width, height: sv.contentSize.height))
         tv.font = .monospaced
         tv.backgroundColor = NSColor.clear.withAlphaComponent(0)

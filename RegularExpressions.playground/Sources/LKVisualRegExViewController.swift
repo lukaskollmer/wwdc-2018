@@ -135,7 +135,7 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
             regexTestStringTextViewContainingScrollView,
             regexOptionsButton,
             leftSocialButton, rightSocialButton
-            ].forEach(self.view.addSubview)
+        ].forEach(self.view.addSubview)
         
         //
         // Auto Layout
@@ -249,11 +249,7 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     // MARK: UI
     
     private func setupTextView(_ textView: NSTextView, inScrollView scrollView: NSScrollView) {
-        // TODO for whatever reason, the scroll bar does not appear. (probably bc auto layout)
-        // TODO how much of this can we get rid of before it stops working? surely not all of this is actually needed, right?
-        
-        // This only configures the layout-related attributes of the text view and its containing scroll view
-        // Everything else is configured in `viewDidLoad`
+        // https://developer.apple.com/library/content/documentation/Cocoa/Conceptual/TextUILayer/Tasks/TextInScrollView.html
         
         let contentSize = scrollView.contentSize
         
@@ -292,7 +288,6 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         guard let textView = notification.object as? NSTextView else { return }
         
         if textView == self.regexTextView {
-            // https://stackoverflow.com/a/44062950/2513803
             textView.invalidateIntrinsicContentSize()
             Defaults.regex = textView.string
             updateMatches()
@@ -303,7 +298,6 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     }
     
     // prevent newlines in the regex text view
-    // TODO is this really necessary? what if whitespaces are expliciely allowed?
     public func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
         return textView == self.regexTextView && replacementString == "\n" ? false : true
     }

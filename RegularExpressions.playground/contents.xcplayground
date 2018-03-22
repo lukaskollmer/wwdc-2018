@@ -1,10 +1,2 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<playground version='6.0' target-platform='macos' display-mode='raw' executeOnSourceChanges='false'>
-    <pages>
-        <page name='Table of Contents'/>
-        <page name='Introduction'/>
-        <page name='Character Sets'/>
-        <page name='Capture Groups'/>
-        <page name='Phoenix'/>
-    </pages>
-</playground>
+<playground version='6.0' target-platform='macos' display-mode='raw' executeOnSourceChanges='false'/>

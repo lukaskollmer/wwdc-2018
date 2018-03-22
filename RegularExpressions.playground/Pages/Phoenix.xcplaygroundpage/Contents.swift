@@ -40,7 +40,11 @@ try! RegEx("hello").matches(in: "hello world").preview // click the Quick Look i
  You can hover the mouse over the highlighted areas to get additional infos about that match, like the contents of the individual capture groups.\
  Click the "RegEx Options" button to further specify the regular expression's behaviour.
  
- > If you already know how regular expressions work, I recommend you skip forward to the "Exercises" section
+ ### Meta
+ - This playground was developed and tested with Xcode 9.2 (Swift 4.0.3)
+ - 3rd party dependencies used in this playground:
+   - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) AutoLayout syntactic sugar
+   - [github.com/thii/SwiftHEXColors](https://github.com/thii/SwiftHEXColors) NSColor hex initializer
  */
 /*:
  ## What are regular expressions
@@ -82,8 +86,47 @@ try! RegEx("o").matches(in: "Doctor Who").preview
  _(This is by no means an exhaustive list, you can view all metacharacters [here](http://userguide.icu-project.org/strings/regexp#TOC-Regular-Expression-Metacharacters))_
  */
 //: - Example:\
-//: **Matching all numbers in a string**
+//:**Matching all numbers in a string**
 try! RegEx("\\d+").matches(in: "abc123xyz").preview
+//: - Example:\
+//:**Matching the beginning of the input**\
+//:Matches the first "h" in "how are you?", but does not match the "h" in "this is so cool!"
+try! RegEx("^h").matches(in: "how are you?").preview
+try! RegEx("^h").matches(in: "this is so cool!").preview
+//: - Example:\
+//:**Matching an entire string**\
+//:Matches only strings that are exactly "hello world". Does not match "hello world!", since that has an additional exclamation mark at the end
+try! RegEx("^hello world$").matches(in: "hello world").preview
+try! RegEx("^hello world$").matches(in: "hello world!").preview
+//: - Example:\
+//:**Matching an expression a between 0 and 1 times**\
+//:Matches both the british and the american spelling of the word "color" (or "colour", depending on where you grew up :)
+try! RegEx("colou?r").matches(in: "is it color or colour?").preview
+//: - Example:\
+//:**Matching an expression 1 or more times**\
+//:Matches both "thank you!" and "thank you!!!!!", as well as all other permutations with a different number of exclamation marks.
+try! RegEx("thank you!+").matches(in: "thank you!").preview
+try! RegEx("thank you!+").matches(in: "thank you!!!!!").preview
+//: - Example:\
+//:**Matching aany single character**\
+//:Matches both "cow" and "how", as well as "low" in "slow".
+try! RegEx(".ow").matches(in: "cow how slow").preview
+//: - Example:\
+//:**Matching one of multiple expressions**\
+//:Matches both "lukas" and "lucas".
+//:> We have to wrap the option between `k` and `c` in parentheses. If we omit the parentheses, it would match either "luk" or "cas".\
+//:The reason why we also put `?:` in the parentheses is to prevent the creation of an accidental capture group (capture groups are explained below)
+try! RegEx("lu(?:k|c)as").matches(in: "lukas lucas").preview
+try! RegEx("luk|cas").matches(in: "lukas lucas").preview
+
+
+
+
+
+
+
+
+
 //: ### Character Sets
 //:
 //: **Syntax**\
@@ -232,3 +275,104 @@ try! RegEx("func [a-zA-Z]+\\(\\) -> ([a-zA-Z]+)").matches(in: "func foo() -> Str
  */
 
 //print("success")
+
+
+
+
+
+
+
+/*
+ import Foundation
+ let regeximg = try! RegEx("(\\d+)x(\\d+)")
+ //regeximg.matches(in: "44x55, 10x12").forEach { print($0) }
+ 
+ 
+ /*****     EXAMPLES     *****/
+ 
+ 
+ // extract price from text
+ let priceRegex = RegEx("Price: \\$(\\d+)")
+ priceRegex.matches(in: "Price: $12").first!.contents(ofCapturingGroup: 1)
+ 
+ 
+ 
+ 
+ /// Extract the subdomain from a url
+ 
+ let subdomainRegex = RegEx("(?:https?://)?([^.]+)")
+ subdomainRegex.matches(in: "http://files.lukaskollmer.me")[0].contents(ofCapturingGroup: 1)
+ "https://lukas.kollmer.me".replacing(regularExpression: subdomainRegex, withTemplate: "$1 ___")
+ 
+ 
+ 
+ 
+ /// Split a sentence into an array of words
+ 
+ RegEx("\\w+").matches(in: "this is insane")
+ 
+ 
+ 
+ 
+ /// Split a name string into first and last name, and replace with a template string
+ 
+ let firstAndLastNameRegex = RegEx("(\\w+)\\s(\\w+)")
+ firstAndLastNameRegex.replace(in: "David Tennant", withTemplate: "$2, $1")
+ "David Tennant".replacing(regularExpression: firstAndLastNameRegex, withTemplate: "$2, $1")
+ 
+ let williamHartnellResult = firstAndLastNameRegex.matches(in: "William Hartnell")[0]
+ williamHartnellResult[0]
+ williamHartnellResult[1]
+ williamHartnellResult[2]
+ 
+ 
+ 
+ 
+ /// Extract the video id from a YouTube link
+ /// How does this work? We simply match alphanumeric characters, starting at the end of the url
+ 
+ RegEx("\\w+$").matches(in: "https://www.youtube.com/watch?v=DLzxrzFCyOs")[0].string
+ 
+ 
+ 
+ /// Split an arbitrarily delimited string-array (names) into an array of strings, then reverse the names to [[LAST_NAME, FIRST_NAME]]
+ let input = "Christopher Eccleston ;David Tennant; Matt Smith ; Peter Capaldi ; Jodie Whittaker"
+ let names = RegEx("\\s*;\\s*").split(input)
+ .map { RegEx("(\\w+)\\s+(\\w+)").replace(in: $0, withTemplate: "$2, $1") }
+ 
+ input.split(regularExpression: "\\s*;\\s*")
+ 
+ 
+ 
+ /// Extract the first 2 words (a name) and a number from a string, then map these extracted values into a nice array
+ 
+ let sentences = [
+ "Jodie Whittaker will be the 13th doctor",
+ "Peter Capaldi is the 12th doctor",
+ "Matt Smith was the 11th doctor",
+ "David Tennant was the 10th doctor",
+ "Christoper Eccleston was the 9th doctor",
+ ]
+ 
+ // A regex that saves the first two words of a sentence in its first capturing group
+ let extractNameRegex = RegEx("^((?:\\S+\\s+){1}\\S+).*")
+ // A regex that saves the first two words of a sentence in its first capturing group and the first number in its second capturing group
+ let extractNameAndNumberRegex = RegEx("^((?:\\S+\\s+){1}\\S+).* (\\d+)")
+ 
+ let combinations: [(Int, String)] = sentences.map { s -> (Int, String) in
+ let match = extractNameAndNumberRegex.matches(in: s)[0]
+ 
+ let name = match.contents(ofCapturingGroup: 1)
+ let number = Int(match.contents(ofCapturingGroup: 2))!
+ 
+ // old code that uses a separate regex to extract the number
+ //let name = extractNameRegex.matches(in: s)[0].contents(ofCapturingGroup: 1)
+ //let number = Int("\\d+"/.matches(in: s)[0].string)!
+ 
+ return (number, name)
+ }.sorted { $0.0 < $1.0 }
+ 
+ combinations...=>
+ 
+ 
+ */

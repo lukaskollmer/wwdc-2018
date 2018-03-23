@@ -1,10 +1,4 @@
-//LKVisualRegExViewController.show()
-
-/*
- TODO
- - consistent capitalization!
- */
-
+LKVisualRegExViewController.show()
 /*:
  # TITLE
  by [Lukas Kollmer](https://lukaskollmer.me) • Spring 2018
@@ -30,8 +24,8 @@ I'm very sorry about this, but sadly there is nothing I can do to prevent it fro
  
  ### About the RegEx type
  The `RegEx` struct is a light wrapper around [`NSRegularExpression`](https://developer.apple.com/documentation/foundation/nsregularexpression) that implements a swift-friendly API and some helper methods, as well as a couple of additional features.\
- The playground also provides an extension on `Array<RegEx.Result>` to display an inline visualization of regex matches. When you get an array of matches, simply access the `preview` property and click the Quick Look icon in the right sidebar to show a little preview of the matches:*/
-try! RegEx("hello").matches(in: "hello world").preview // click the Quick Look icon in the right sidebar
+ The playground also implements an extension to make `Array<RegEx.Result>` conform to `CustomPlaygroundQuickLookable` to display an inline visualization of regex matches. When you get an array of matches, simply click the Quick Look icon in the right sidebar to show a little preview of the matches:*/
+try! RegEx("hello").matches(in: "hello world") // click the Quick Look icon in the right sidebar
 /*:
  ### About the live view
  The live view allows you to visualize a regular expression's matches in a given test string.\
@@ -57,7 +51,7 @@ try! RegEx("hello").matches(in: "hello world").preview // click the Quick Look i
  - Example:\
  **Matching the string "hello" literally**\
 As you can see in the Quick Look preview, the following regex simply matches every "o" in the string "Doctor Who"*/
-try! RegEx("o").matches(in: "Doctor Who").preview
+try! RegEx("o").matches(in: "Doctor Who")
 /*:
  ### Special characters
  
@@ -85,37 +79,37 @@ try! RegEx("o").matches(in: "Doctor Who").preview
  */
 //: - Example:\
 //:**Matching all numbers in a string**
-try! RegEx("\\d+").matches(in: "abc123xyz").preview
+try! RegEx("\\d+").matches(in: "abc123xyz")
 //: - Example:\
 //:**Matching the beginning of the input**\
 //:Matches the first "h" in "how are you?", but does not match the "h" in "this is so cool!"
-try! RegEx("^h").matches(in: "how are you?").preview
-try! RegEx("^h").matches(in: "this is so cool!").preview
+try! RegEx("^h").matches(in: "how are you?")
+try! RegEx("^h").matches(in: "this is so cool!")
 //: - Example:\
 //:**Matching an entire string**\
 //:Matches only strings that are exactly "hello world". Does not match "hello world!", since that has an additional exclamation mark at the end
-try! RegEx("^hello world$").matches(in: "hello world").preview
-try! RegEx("^hello world$").matches(in: "hello world!").preview
+try! RegEx("^hello world$").matches(in: "hello world")
+try! RegEx("^hello world$").matches(in: "hello world!")
 //: - Example:\
 //:**Matching an expression a between 0 and 1 times**\
 //:Matches both the british and the american spelling of the word "color" (or "colour", depending on where you grew up :)
-try! RegEx("colou?r").matches(in: "is it color or colour?").preview
+try! RegEx("colou?r").matches(in: "is it color or colour?")
 //: - Example:\
 //:**Matching an expression 1 or more times**\
 //:Matches both "thank you!" and "thank you!!!!!", as well as all other permutations with a different number of exclamation marks.
-try! RegEx("thank you!+").matches(in: "thank you!").preview
-try! RegEx("thank you!+").matches(in: "thank you!!!!!").preview
+try! RegEx("thank you!+").matches(in: "thank you!")
+try! RegEx("thank you!+").matches(in: "thank you!!!!!")
 //: - Example:\
 //:**Matching any single character**\
 //:Matches both "cow" and "how", as well as "low" in "slow".
-try! RegEx(".ow").matches(in: "cow how slow").preview
+try! RegEx(".ow").matches(in: "cow how slow")
 //: - Example:\
 //:**Matching one of multiple expressions**\
 //:Matches both "lukas" and "lucas".
 //:> We have to wrap the option between `k` and `c` in parentheses. If we omit the parentheses, it would match either "luk" or "cas".\
 //:The reason why we also put `?:` in the parentheses is to prevent the accidental creation of a capture group (capture groups are explained below)
-try! RegEx("lu(?:k|c)as").matches(in: "lukas lucas").preview
-try! RegEx("luk|cas").matches(in: "lukas lucas").preview
+try! RegEx("lu(?:k|c)as").matches(in: "lukas lucas")
+try! RegEx("luk|cas").matches(in: "lukas lucas")
 //: ## Character sets
 //:
 //: ### Syntax
@@ -130,7 +124,7 @@ try! RegEx("[xyz]").matches(in: "xyz").count // as you can see in the sidebar, t
 //: - Example:\
 //:**Matching all lowercase characters in a string**\
 //:As you can see in the Quick Look preview, only "abc" and "xyz" are matched
-try! RegEx("[a-z]+").matches(in: "abc123xyz ABC123XYZ").preview
+try! RegEx("[a-z]+").matches(in: "abc123xyz ABC123XYZ")
 //: ### Inverted character sets
 //: You can invert a character set by inserting `^` at the beginning. The set will then match everything, except the characters defined in the set.
 //: > The meaning of `^` depends on its context:\
@@ -140,7 +134,7 @@ try! RegEx("[a-z]+").matches(in: "abc123xyz ABC123XYZ").preview
 //:**Matching all non-lowercase characters**\
 //:As you can see in the Quick Look preview, only "123", " ABC" and "XYZ" are matched.\
 //:Since we match everything that's not a lowercase character, the space between the two words is also matched.
-try! RegEx("[^a-z]+").matches(in: "abc123xyz ABC123XYZ").preview
+try! RegEx("[^a-z]+").matches(in: "abc123xyz ABC123XYZ")
 //: ## Capture groups
 //: Capture groups allow you to "remember" parts of a match. This is useful if you want to extract parts of the match from a string
 //:
@@ -179,7 +173,7 @@ try! RegEx("\\w+ (?<last>\\w+)").replace(in: "Lukas Kollmer", withTemplate: "Luc
 /*:
  - Callout(Solution):\
  `[A-Z]`*/
-try! RegEx("[A-Z]").matches(in: "I Am The Doctor").preview
+try! RegEx("[A-Z]").matches(in: "I Am The Doctor")
 /*:
  - Callout(Exercice): **Matching hexadecimal numbers**\
 Create a regular expression that checks whether a string is a hexadecimal number.\
@@ -231,7 +225,7 @@ Example of a valid function signature:\
  See it in action below:*/
 // Click the Quick Look icon in the sidebar to open the preview
 // You can see that the regex matched the entire function signature and captured the return type
-try! RegEx("func [a-zA-Z]+\\(\\) -> ([a-zA-Z]+)").matches(in: "func foo() -> String").preview
+try! RegEx("func [a-zA-Z]+\\(\\) -> ([a-zA-Z]+)").matches(in: "func foo() -> String")
 /*:
  - Callout(Exercise): **Parse and format a person's name**\
 Extract a person's first and last name from a string in the format "last, first" and use template substitution to format the string to "first last"\
@@ -268,4 +262,6 @@ try! RegEx("(?<last>\\w+), (?<first>\\w+)").replace(in: "Tennant, David", withTe
  - callout block indentation
  - it's way too easy to accidentally delete entire blocks of content in the rendered mode
  - cmd+z should not include switching between raw and rendered mode
+ 
+ https://forums.developer.apple.com/thread/99022
  */

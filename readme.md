@@ -1,6 +1,6 @@
 # wwdc-2018
 
-> An Introduction to Regular Expressions
+> A Visual Introduction to Regular Expressions
 
 ## Chapters (wip)
 - ToC (+ meta documentation)

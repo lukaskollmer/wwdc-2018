@@ -328,6 +328,10 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         do {
             regex = try RegEx(Defaults.regex, options: Defaults.regexOptions)
         } catch {
+            // remove old highlights from the last pattern
+            regexTestStringTextView.removeAllHighlights()
+            
+            // show an error indicator in the regex text view
             regexCompilationErrorImageView.isHidden = regexTextView.string.isEmpty
             regexCompilationErrorImageView.toolTip = "Error compiling regular expression: \(error.localizedDescription)"
             return

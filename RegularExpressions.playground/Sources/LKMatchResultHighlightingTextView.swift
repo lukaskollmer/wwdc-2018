@@ -116,11 +116,14 @@ public class LKMatchResultHighlightingTextView: LKTextView {
         }
     }
     
-    public func updateHighlights(forMatches matches: [RegEx.Result]) {
-        // Remove all old highlights
+    public func removeAllHighlights() {
         self.highlightViews.forEach { $0.removeFromSuperview() }
         self.highlightViews.removeAll()
-        
+    }
+    
+    public func updateHighlights(forMatches matches: [RegEx.Result]) {
+        // Remove all old highlights
+        self.removeAllHighlights()
         
         guard
             let sv = self.superview?.superview, // The NSScrollView containing this text view

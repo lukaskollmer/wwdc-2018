@@ -107,7 +107,7 @@ try! RegEx("colou?r").matches(in: "is it color or colour?").preview
 try! RegEx("thank you!+").matches(in: "thank you!").preview
 try! RegEx("thank you!+").matches(in: "thank you!!!!!").preview
 //: - Example:\
-//:**Matching aany single character**\
+//:**Matching any single character**\
 //:Matches both "cow" and "how", as well as "low" in "slow".
 try! RegEx(".ow").matches(in: "cow how slow").preview
 //: - Example:\

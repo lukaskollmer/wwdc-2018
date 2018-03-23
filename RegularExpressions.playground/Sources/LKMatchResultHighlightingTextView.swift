@@ -2,8 +2,8 @@ import AppKit
 
 
 private extension NSColor {
-    static let fullMatchLightGreen = NSColor(hexString: "#CCE7A5")!
-    static let captureGroupBlue = NSColor(hexString: "#85C3FA")!
+    static let fullMatchLightGreen = NSColor(red: 204/255, green: 231/255, blue: 165/255, alpha: 1)
+    static let captureGroupBlue    = NSColor(red: 133/255, green: 195/255, blue: 250/255, alpha: 1)
 }
 
 private extension NSRect {

@@ -2,7 +2,7 @@ LKVisualRegExViewController.show()
 
 /*
  TODO
- - consistent capitalization?
+ - consistent capitalization!
  */
 
 /*:
@@ -83,7 +83,7 @@ try! RegEx("o").matches(in: "Doctor Who").preview
  - `\w` Matches any single word character (including the underscore). This is equivalent to `[A-Za-z0-9_]`
  - `\W` Matches any single non-word character (including the underscore). This is equivalent to `[^A-Za-z0-9_]`
  
- _(This is by no means an exhaustive list, you can view all metacharacters [here](http://userguide.icu-project.org/strings/regexp#TOC-Regular-Expression-Metacharacters))_
+ _(This is by no means an exhaustive list, you can view all metacharacters and operators [here](http://userguide.icu-project.org/strings/regexp#TOC-Regular-Expression-Metacharacters))_
  */
 //: - Example:\
 //:**Matching all numbers in a string**
@@ -115,7 +115,7 @@ try! RegEx(".ow").matches(in: "cow how slow").preview
 //:**Matching one of multiple expressions**\
 //:Matches both "lukas" and "lucas".
 //:> We have to wrap the option between `k` and `c` in parentheses. If we omit the parentheses, it would match either "luk" or "cas".\
-//:The reason why we also put `?:` in the parentheses is to prevent the creation of an accidental capture group (capture groups are explained below)
+//:The reason why we also put `?:` in the parentheses is to prevent the accidental creation of a capture group (capture groups are explained below)
 try! RegEx("lu(?:k|c)as").matches(in: "lukas lucas").preview
 try! RegEx("luk|cas").matches(in: "lukas lucas").preview
 
@@ -132,7 +132,8 @@ try! RegEx("luk|cas").matches(in: "lukas lucas").preview
 //: **Syntax**\
 //: Character Sets allow you to define a collection of characters, any one of which will match the input. You can also use a set as a shorthand for character ranges.\
 //: You define a character set by wrapping an expression in square brackets: `[pattern]`\
-//: For example, the pattern `[xyz]` would match all characters in the string "xyz" individually
+//: \
+//: For example, the pattern `[xyz]` matches all characters in the string "xyz" individually:
 try! RegEx("[xyz]").matches(in: "xyz").count // as you can see in the sidebar, the pattern produces 3 matches in the string
 //: **Character Ranges**\
 //: You can also define character ranges. For example, the character set `[a-f]` matches any of the characters a, b, c, d, e and f.\
@@ -148,15 +149,15 @@ try! RegEx("[a-z]+").matches(in: "abc123xyz ABC123XYZ").preview
 //: • When used inside a character set, it inverts the set
 //: - Example:\
 //:**Matching all non-lowercase characters**\
-//:As you can see in the Quick Look preview, only "123", "ABC" and "XYZ" are matched.\
+//:As you can see in the Quick Look preview, only "123", " ABC" and "XYZ" are matched.\
 //:Since we match everything that's not a lowercase character, the space between the two words is also matched.
 try! RegEx("[^a-z]+").matches(in: "abc123xyz ABC123XYZ").preview
 //: ### Capture Groups
-//: Capture groups allow you to "remember" parts of a match. This is useful if you want to extract parts of the match from a string\
+//: Capture groups allow you to "remember" parts of a match. This is useful if you want to extract parts of the match from a string
 //:
 //: **Syntax**\
 //: Create a capture group by wrapping a part of the pattern in parentheses. Prefix the pattern in the parentheses with `?:` to create a non-capturing group\
-//:\
+//:
 //: There are multiple kinds of capture groups:
 //: - `(x)` matches `x` and remembers the match
 //: - `(?:x)` matches `x` but does not remember the match
@@ -265,6 +266,42 @@ Example of a valid function signature:\
 // Click the Quick Look icon in the sidebar to open the preview
 // You can see that the regex matched the entire function signature and captured the return type
 try! RegEx("func [a-zA-Z]+\\(\\) -> ([a-zA-Z]+)").matches(in: "func foo() -> String").preview
+/*:
+ - Callout(Exercise): **Parse and format a person's name**\
+Extract a person's first and last name from a string in the format "last, first" and use template substitution to format the string to "first last"\
+Sample input: `Tennant, David`\
+Sample output: `David Tennant`
+ */
+/*:
+ - Callout(Solution):\
+Pattern: `(\w+), (\w+)`\
+Template: `$2 $1`\
+\
+**Explanation**:\
+• `\w` matches any word character we use the `+` operator to match as many word characters as possible\
+• We use capture groups to remember the matched words\
+• Basically, this pattern matches two words that are separated by ", " and remembers both words
+ */
+try! RegEx("(\\w+), (\\w+)").replace(in: "Tennant, David", withTemplate: "$2 $1")
+
+// Another example that uses named capture groups instead:
+try! RegEx("(?<last>\\w+), (?<first>\\w+)").replace(in: "Tennant, David", withTemplate: "${first} ${last}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*
@@ -272,6 +309,7 @@ try! RegEx("func [a-zA-Z]+\\(\\) -> ([a-zA-Z]+)").matches(in: "func foo() -> Str
  - lists in callout blocks
  - callout block indentation
  - it's way too easy to accidentally delete entire blocks of content in the rendered mode
+ - cmd+z should not include switching between raw and rendered mode
  */
 
 //print("success")

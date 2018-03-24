@@ -2,8 +2,8 @@ import AppKit
 
 
 private extension NSColor {
-    static let fullMatchLightGreen = NSColor(red: 204/255, green: 231/255, blue: 165/255, alpha: 1)
-    static let captureGroupBlue    = NSColor(red: 133/255, green: 195/255, blue: 250/255, alpha: 1)
+    static let fullMatchGreen   = NSColor(red: 204/255, green: 231/255, blue: 165/255, alpha: 1)
+    static let captureGroupBlue = NSColor(red: 133/255, green: 195/255, blue: 250/255, alpha: 1)
 }
 
 private extension NSRect {
@@ -48,11 +48,11 @@ public class LKTextView: NSTextView {
     override public func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         
-        if self.string.isEmpty {
+        if string.isEmpty && !placeholder.isEmpty {
             NSString(string: placeholder).draw(at: NSPoint(x: 5, y: -5), withAttributes: [
-                NSAttributedStringKey.font: self.font!,
-                NSAttributedStringKey.foregroundColor: NSColor.gray
-                ])
+                .font: self.font!,
+                .foregroundColor: NSColor.gray
+            ])
         }
     }
 }
@@ -67,6 +67,13 @@ public class LKMatchResultHighlightingTextView: LKTextView {
         enum Kind {
             case fullMatch
             case captureGroup
+            
+            var color: NSColor {
+                switch self {
+                case .fullMatch:    return .fullMatchGreen
+                case .captureGroup: return .captureGroupBlue
+                }
+            }
         }
         
         let match: RegEx.Result
@@ -141,17 +148,9 @@ public class LKMatchResultHighlightingTextView: LKTextView {
             match.enumerateCaptureGroups { index, range, content in
                 layoutManager.enumerateEnclosingRects(forGlyphRange: range, withinSelectedGlyphRange: match.range, in: textContainer) { rect, stop in
                     let kind: LKMatchHighlightView.Kind = index == 0 ? .fullMatch : .captureGroup
-                    
-                    let color = { () -> NSColor in
-                        switch kind {
-                        case .fullMatch: return .fullMatchLightGreen
-                        case .captureGroup: return .captureGroupBlue
-                        }
-                    }()
-                    
                     let frame = rect.offset(by: self.textContainerInset)
                     
-                    self.highlightViews.append(LKMatchHighlightView(match: match, frame: frame, color: color, kind: kind))
+                    self.highlightViews.append(LKMatchHighlightView(match: match, frame: frame, color: kind.color, kind: kind))
                 }
             }
         }

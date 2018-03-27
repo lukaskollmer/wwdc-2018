@@ -128,7 +128,7 @@ public class LKMatchResultHighlightingTextView: LKTextView {
         self.highlightViews.removeAll()
     }
     
-    public func updateHighlights(forMatches matches: [RegEx.Result]) {
+    public func updateHighlights(forMatches matches: RegEx.MatchCollection) {
         // Remove all old highlights
         self.removeAllHighlights()
         

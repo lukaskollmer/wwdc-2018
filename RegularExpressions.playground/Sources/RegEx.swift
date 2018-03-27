@@ -130,10 +130,12 @@ public struct RegEx {
     ///   - string: The string to match againsr
     ///   - options: Matching options
     /// - Returns: An array of matches
-    public func matches(in string: String) -> [RegEx.Result] {
-        return self.regex.matches(in: string, options: [], range: string.range).enumerated().map {
+    public func matches(in string: String) -> RegEx.MatchCollection {
+        let matches = self.regex.matches(in: string, options: [], range: string.range).enumerated().map {
             return RegEx.Result(result: $1, initialString: string, index: $0, regex: self)
         }
+        
+        return RegEx.MatchCollection(matches: matches, matchedString: string)
     }
     
     /// Check whether a regular expression matches a string
@@ -227,6 +229,49 @@ extension RegEx : ExpressibleByStringLiteral {
         try! self.init(value)
     }
 }
+
+
+extension RegEx {
+    /// A Collection of regex matches
+    ///
+    /// Instead of simply returning Array<RegEx.Result>, we return a custom sequence that also stores the string the regex was matched against
+    /// This allows us to still get access to the matched string, even if the regex produces 0 matches in the string
+    /// Why do we need this? The inline preview (see RegExMatchCollection+CustomPlaygroundQuickLookable.swift) needs to know the string the pattern was matched against, in order to highlight the matches
+    /// We could access the string via one of the matches, but that means that we can't get it when there are 0 matches
+    public struct MatchCollection: RandomAccessCollection {
+        public typealias Element  = RegEx.Result
+        public typealias Index    = Int
+        public typealias Iterator = IndexingIterator<[Element]>
+        
+        fileprivate let backing: [Element]
+        let matchedString: String
+        
+        init(matches: [Element], matchedString: String) {
+            self.backing = matches
+            self.matchedString = matchedString
+        }
+        
+        public func makeIterator() -> RegEx.MatchCollection.Iterator {
+            return backing.makeIterator()
+        }
+        
+        public var startIndex: Index { return backing.startIndex }
+        public var endIndex: Index { return backing.endIndex }
+        
+        public func index(after i: Index) -> Index {
+            return backing.index(after: i)
+        }
+        
+        public func index(before i: Index) -> Index {
+            return backing.index(before: i)
+        }
+        
+        public subscript(position: Index) -> Element {
+            return backing[position]
+        }
+    }
+}
+
 
 // MARK: RegEx + Comment Initialization (expreimental) // TODO remove?
 

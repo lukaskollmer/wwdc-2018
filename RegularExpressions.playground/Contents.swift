@@ -1,4 +1,4 @@
-LKVisualRegExViewController.show()
+//LKVisualRegExViewController.show()
 /*:
  # TITLE
  by [Lukas Kollmer](https://lukaskollmer.me) • Spring 2018
@@ -36,7 +36,7 @@ try! RegEx("hello").matches(in: "hello world") // click the Quick Look icon in t
  ### Meta
  - This playground was developed and tested with Xcode 9.2 (Swift 4.0.3)
  - 3rd party dependencies used in this playground:
-   - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) AutoLayout syntactic sugar
+   - [github.com/roberthein/TinyConstraints](https://github.com/roberthein/TinyConstraints) Auto Layout syntactic sugar
  */
 /*:
  ## What are regular expressions
@@ -252,8 +252,6 @@ try! RegEx("(?<last>\\w+), (?<first>\\w+)").replace(in: "Tennant, David", withTe
 //: - Foundation's regular expressions implementation:
 //:   - [NSRegularExpression](https://developer.apple.com/documentation/foundation/nsregularexpression)
 //:   - [NSTextCheckingResult](https://developer.apple.com/documentation/foundation/nstextcheckingresult)
-
-
 
 
 /*

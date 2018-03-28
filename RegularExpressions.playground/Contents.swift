@@ -1,6 +1,6 @@
-//LKVisualRegExViewController.show()
+LKVisualRegExViewController.show()
 /*:
- # TITLE
+ # Regular Expressions
  by [Lukas Kollmer](https://lukaskollmer.me) • Spring 2018
  
  ## Table of Contents

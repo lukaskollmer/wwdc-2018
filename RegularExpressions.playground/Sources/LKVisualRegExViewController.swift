@@ -54,7 +54,7 @@ private let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
 public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     
     // Title Bar
-    private let titleLabel = NSTextField(labelWithString: "Title") // "Visual RegEx"
+    private let titleLabel = NSTextField(labelWithString: "Visual RegEx")
     private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer")
     
     
@@ -337,7 +337,7 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
             return
         }
         
-        self.regexTestStringTextView.updateHighlights(forMatches: regex.matches(in: self.regexTestStringTextView.string))
+        regexTestStringTextView.updateHighlights(forMatches: regex.matches(in: Defaults.testInput))
         
         regexCompilationErrorImageView.isHidden = true
         regexCompilationErrorImageView.toolTip = nil

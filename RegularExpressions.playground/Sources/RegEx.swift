@@ -95,6 +95,7 @@ public struct RegEx {
         /// The block takes 3 parameters: groupIndex, groupRange and groupContents
         public func enumerateCaptureGroups(block: (Int, NSRange, String) -> Void) {
             (0..<self.numberOfCaptureGroups).forEach { index in
+                guard self.range(ofCaptureGroup: index) != NSRange(location: NSNotFound, length: 0) else { return }
                 block(index, self.range(ofCaptureGroup: index), self.contents(ofCaptureGroup: index))
             }
         }

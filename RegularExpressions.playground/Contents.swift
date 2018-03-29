@@ -328,7 +328,7 @@ _(Copy the pattern and sample urls from above into the live view to see the rege
 `(?:[\w-]+\.)*    # match between 0 and unlimited subdomains`\
 `[\w-]+           # match the domain`\
 `\.[a-z]{2,}      # match the tld (single period, followed by at least two lowercase characters)`\
-`$                # match the end of the input`\
+`$                # match the end of the input`
  */
 //: ## More resources
 //: - [Official unicode spec](http://www.unicode.org/reports/tr18/)

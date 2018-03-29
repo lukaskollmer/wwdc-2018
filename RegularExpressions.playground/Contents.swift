@@ -24,7 +24,7 @@ I'm very sorry about this, but sadly there is nothing I can do to prevent it fro
  
  ### About the RegEx type
  The `RegEx` struct is a light wrapper around [`NSRegularExpression`](https://developer.apple.com/documentation/foundation/nsregularexpression) that implements a swift-friendly API and some helper methods, as well as a couple of additional features.\
- The playground also implements an extension to make `Array<RegEx.Result>` conform to `CustomPlaygroundQuickLookable` to display an inline visualization of regex matches. When you get an array of matches, simply click the Quick Look icon in the right sidebar to show a little preview of the matches:*/
+ All collections of matches returned by `RegEx.matches(in:)` conform to `CustomPlaygroundQuickLookable`, allowing the playground to show inline previews of regex matches. When you get an array of matches, simply click the Quick Look icon in the right sidebar to show a little preview of the matches:*/
 try! RegEx("hello").matches(in: "hello world") // click the Quick Look icon in the right sidebar
 /*:
  ### About the live view
@@ -61,6 +61,9 @@ try! RegEx("o").matches(in: "Doctor Who")
  - `*` Matches the preceding expression 0 or more times
  - `+` Matches the preceding expression 1 or more times
  - `?` Matches the preceding expression 0 or 1 times
+ - `{n}` Matches the preceding expression excatly n times
+ - `{n,}` Matches the preceding expression at least n times
+ - `{n,m}` Matches the preceding expression between n and m times
  - `a|b` Matches either `a` or `b`
  - `(x)` Matches `x` and remembers the match. (Explained in depth in the Capture Groups section)
  - `[pattern]` Matches any single character from the pattern. (Explained in depth in the Character Sets section)\
@@ -110,12 +113,26 @@ try! RegEx(".ow").matches(in: "cow how slow")
 //:The reason why we also put `?:` in the parentheses is to prevent the accidental creation of a capture group (capture groups are explained below)
 try! RegEx("lu(?:k|c)as").matches(in: "lukas lucas")
 try! RegEx("luk|cas").matches(in: "lukas lucas")
+//: - Example:\
+//:**Matching an expression exactly n times**\
+//:Matches the string "xo", exactly two times
+//:> Unless you want to match a single character a specific number of times, you have to wrap the preceding expression in non-capturing parentheses.\
+//:See the second example for what happens if we omit the parentheses
+try! RegEx("(?:xo){2}").matches(in: "xoxo")
+try! RegEx("xo{2}").matches(in: "xoxo xoo")
+//: - Example:\
+//:**Matching an expression at least n times**\
+//:Matches the string "thank you", followed by at least 3 exclamation marks
+//:>• `{0,}` is equivalent to the `*` operator (match 0 or more times)\
+//:• `{1,}` is equivalent to the `+` operator (match 1 or more times)
+try! RegEx("thank you\\!{3,}").matches(in: "thank you!!!")
+try! RegEx("thank you\\!{3,}").matches(in: "thank you!!!!!!!!")
+try! RegEx("thank you\\!{3,}").matches(in: "thank you!!")
 //: ## Character sets
+//: Character Sets allow you to define a collection of characters, any one of which will match the input. You can also use a set as a shorthand for character ranges.
 //:
 //: ### Syntax
-//: Character Sets allow you to define a collection of characters, any one of which will match the input. You can also use a set as a shorthand for character ranges.\
 //: You define a character set by wrapping an expression in square brackets: `[pattern]`\
-//: \
 //: For example, the pattern `[xyz]` matches all characters in the string "xyz" individually:
 try! RegEx("[xyz]").matches(in: "xyz").count // as you can see in the sidebar, the pattern produces 3 matches in the string
 //: ### Character ranges
@@ -139,7 +156,7 @@ try! RegEx("[^a-z]+").matches(in: "abc123xyz ABC123XYZ")
 //: Capture groups allow you to "remember" parts of a match. This is useful if you want to extract parts of the match from a string
 //:
 //: ### Syntax
-//: Create a capture group by wrapping a part of the pattern in parentheses. Prefix the pattern in the parentheses with `?:` to create a non-capturing group\
+//: Create a capture group by wrapping a part of the pattern in parentheses. Prefix the pattern in the parentheses with `?:` to create a non-capturing group
 //:
 //: There are multiple kinds of capture groups:
 //: - `(x)` matches `x` and remembers the match
@@ -178,6 +195,7 @@ try! RegEx("[A-Z]").matches(in: "I Am The Doctor")
  - Callout(Exercice): **Matching hexadecimal numbers**\
 Create a regular expression that checks whether a string is a hexadecimal number.\
 Reminder: Hexadecimal numbers consist of the digits 0-9, as well as the letters a-f.\
+\
 Here are some numbers you can check your regex against:\
 `123`\
 `123a`\
@@ -243,23 +261,60 @@ Template: `$2 $1`\
 • Basically, this pattern matches two words that are separated by ", " and remembers both words
  */
 try! RegEx("(\\w+), (\\w+)").replace(in: "Tennant, David", withTemplate: "$2 $1")
-
 // Another example that uses named capture groups instead:
 try! RegEx("(?<last>\\w+), (?<first>\\w+)").replace(in: "Tennant, David", withTemplate: "${first} ${last}")
+/*:
+ - Callout(Exercise): **Extract keys and values from a query string**\
+ Write a regular expression that parses a url [query string](https://en.wikipedia.org/wiki/Query_string) and extracts key/value pairs via named using capture groups\
+ Sample input: `Texample.com/?&name=Lukas&age=19`
+ */
+/*:
+ - Callout(Solution):\
+`&(?<key>[a-zA-Z]+)=(?<value>[\w-.]+)`\
+_(Copy the pattern and sample url from above into the live view to see the regex in action)_\
+\
+**Explanation**:\
+• `&` is matched literally and marks the beginning of the query string\
+• `(?<key>[a-zA-Z]+)` is a named capture group that matches all lower- and uppercase characters\
+• `=` matches the separator between the key and the value\
+• `(?<value>[\w-.]+)` captures the value (allowed characters are word characters (`\w`), `-` and `.`
+ */
+let matches = try! RegEx("&(?<key>[a-zA-Z]+)=(?<value>[\\w-.]+)").matches(in: "example.com/?&name=Lukas&age=19")
+let parameters: [(key: String, value: String)] =
+    matches.map { ($0["key"], $0["value"]) }
+
+/*:
+ - Callout(Exercise): **Verify that a url is valid**\
+Write a regular expression that verifies that a url string is in a valid format\
+\
+Examples of valid urls:\
+`google.com`\
+`http://google.com`\
+`https://google.com`\
+`http://mail.google.com`\
+`https://mail.google.com`\
+\
+Examples of invalid urls:\
+`.google.com`\
+`httpx://google.com`\
+`httpx://mail.google.com`
+ */
+/*:
+ - Callout(Solution):\
+`^(?:https?://)?(?:[\w-]+\.)*[\w-]+\.[a-z]{2,}$`\
+_(Copy the pattern and sample urls from above into the live view to see the regex in action)_\
+\
+**Explanation**:\
+• We use `^` and `$` to make sure the pattern matches the entire url\
+• A url _can_ start with `http` or `https`, but it doesn't have to. That's why `https?://` is in a non-capturing group followed by the `?` operator (reminder: the `?` operator matches the preceding expression zero or one times)\
+ • `https?://` matches both `http://` and `https://`\
+• `(?:[\w-]+\.)*` matches the url's subdomains. We use a the `*` operator with a non-capturing group to match between 0 and unlimited subdomains. We use a character group to specify the valid character for a subdomain\
+• `[\w-]+` is the part that matches the domain\
+• Finally, `\.[a-z]{2,}` matches the tld. We define a tld as a single dot, followed by at least two lowercase characters
+ */
 //: ## More resources
 //: - [Official unicode spec](http://www.unicode.org/reports/tr18/)
 //: - [Official ICU documentation](http://userguide.icu-project.org/strings/regexp)
 //: - Foundation's regular expressions implementation:
 //:   - [NSRegularExpression](https://developer.apple.com/documentation/foundation/nsregularexpression)
 //:   - [NSTextCheckingResult](https://developer.apple.com/documentation/foundation/nstextcheckingresult)
-
-
-/*
- xcode markup bugs:
- - lists in callout blocks
- - callout block indentation
- - it's way too easy to accidentally delete entire blocks of content in the rendered mode
- - cmd+z should not include switching between raw and rendered mode
- 
- https://forums.developer.apple.com/thread/99022
- */

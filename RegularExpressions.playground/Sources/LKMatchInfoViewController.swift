@@ -8,7 +8,7 @@ private extension NSEdgeInsets {
 
 /// View Controller showing info about a regex match
 /// This info includes the matched range, substring, and the info about all capture groups
-/// This is the view controller shows in a popover when hovering over match results
+/// This is the view controller shown in a popover when hovering over match results
 class LKMatchInfoViewController: NSViewController {
     
     let match: RegEx.Result

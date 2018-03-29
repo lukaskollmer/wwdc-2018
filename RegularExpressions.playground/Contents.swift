@@ -9,6 +9,7 @@ LKVisualRegExViewController.show()
  - Syntax and usage
  - Character sets
  - Capture groups
+ - Comments and multiline patterns
  - Some exercises (with solutions)
  - More resources
  
@@ -181,6 +182,23 @@ try! RegEx("(?<first>\\w+) \\w+").matches(in: "Lukas Kollmer")[0].contents(ofCap
 //:In both examples below the regex remembers the last name and inserts it into the template string.
 try! RegEx("\\w+ (\\w+)")       .replace(in: "Lukas Kollmer", withTemplate: "Lucas $1")
 try! RegEx("\\w+ (?<last>\\w+)").replace(in: "Lukas Kollmer", withTemplate: "Lucas ${last}")
+/*:
+ ## Comments and multiline patterns
+ There are two ways to put comments in a regex pattern:
+ - Using the `(?#...)` operator to write an inline comment
+ - Enabling the "allow comments and whitespace" option and using the `#` operator (without parentheses) to write a line comment
+ 
+ Line comments start at the `#` and continue until the end of the line.\
+ The "allow comments and whitespace" option also allows you to break up your pattern over multiple lines - which can be useful when you're dealing with very long and complex patterns.
+ - Example:\
+Above, we looked at the following pattern:\
+`(?:xo){2}`\
+\
+This is what it would look like with comments and split up over multiple lines:\
+`(?:  # non-capturing group`\
+`  xo # match the string "xo"`\
+`){2} # match the preceding expression two times`
+ */
 //: ## Exercises
 //:
 //: ### Character set exercises
@@ -305,12 +323,12 @@ Examples of invalid urls:\
 _(Copy the pattern and sample urls from above into the live view to see the regex in action)_\
 \
 **Explanation**:\
-• We use `^` and `$` to make sure the pattern matches the entire url\
-• A url _can_ start with `http` or `https`, but it doesn't have to. That's why `https?://` is in a non-capturing group followed by the `?` operator (reminder: the `?` operator matches the preceding expression zero or one times)\
- • `https?://` matches both `http://` and `https://`\
-• `(?:[\w-]+\.)*` matches the url's subdomains. We use a the `*` operator with a non-capturing group to match between 0 and unlimited subdomains. We use a character group to specify the valid character for a subdomain\
-• `[\w-]+` is the part that matches the domain\
-• Finally, `\.[a-z]{2,}` matches the tld. We define a tld as a single dot, followed by at least two lowercase characters
+`^                # use ^ and $ to make sure the entire url matches the pattern`\
+`(?:https?://)?   # match either "http://", "https://" or no scheme at all`\
+`(?:[\w-]+\.)*    # match between 0 and unlimited subdomains`\
+`[\w-]+           # match the domain`\
+`\.[a-z]{2,}      # match the tld (single period, followed by at least two lowercase characters)`\
+`$                # match the end of the input`\
  */
 //: ## More resources
 //: - [Official unicode spec](http://www.unicode.org/reports/tr18/)

@@ -95,7 +95,7 @@ try! RegEx("^hello world$").matches(in: "hello world")
 try! RegEx("^hello world$").matches(in: "hello world!")
 //: - Example:\
 //:**Matching an expression a between 0 and 1 times**\
-//:Matches both the british and the american spelling of the word "color" (or "colour", depending on where you grew up :)
+//:Matches both the british and the american spelling of the word "color"
 try! RegEx("colou?r").matches(in: "is it color or colour?")
 //: - Example:\
 //:**Matching an expression 1 or more times**\

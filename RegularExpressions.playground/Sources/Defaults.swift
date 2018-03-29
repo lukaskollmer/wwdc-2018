@@ -1,21 +1,22 @@
 import Foundation
 
-public struct Defaults {
-    private static let defaults = UserDefaults(suiteName: "me.lukaskollmer.playground.visualregex")! // TODO can we safely unwrap this?
-    public static var regex: String {
+struct Defaults {
+    private static let defaults = UserDefaults(suiteName: "me.lukaskollmer.playground.visualregex")!
+    
+    static var regex: String {
         get { return defaults.string(forKey: #function) ?? "" }
         set { defaults.set(newValue, forKey: #function) }
     }
     
-    public static var testInput: String {
+    static var testInput: String {
         get { return defaults.string(forKey: #function) ?? "" }
         set { defaults.set(newValue, forKey: #function) }
     }
     
-    public static var regexOptions: NSRegularExpression.Options {
+    static var regexOptions: RegEx.Options {
         get {
             let rawValue = defaults.integer(forKey: #function)
-            return NSRegularExpression.Options(rawValue: UInt(rawValue))
+            return RegEx.Options(rawValue: UInt(rawValue))
         }
         set { defaults.set(newValue.rawValue, forKey: #function) }
     }

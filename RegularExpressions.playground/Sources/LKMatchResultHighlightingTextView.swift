@@ -1,6 +1,5 @@
 import AppKit
 
-
 private extension NSColor {
     static let fullMatchGreen   = NSColor(red: 204/255, green: 231/255, blue: 165/255, alpha: 1)
     static let captureGroupBlue = NSColor(red: 133/255, green: 195/255, blue: 250/255, alpha: 1)
@@ -14,8 +13,8 @@ private extension NSRect {
 
 
 /// Subclasses of NSScrollView that implements an auto-expanding multiline text view
-public class LKScrollView: NSScrollView {
-    override public var intrinsicContentSize: NSSize {
+class LKScrollView: NSScrollView {
+    override var intrinsicContentSize: NSSize {
         // TODO guard let the text container as well!
         guard
             let textView = self.documentView as? NSTextView,
@@ -31,10 +30,10 @@ public class LKScrollView: NSScrollView {
 /// Subclass of NSTextView that implements:
 /// - the capability to have the text view auto-expand (by overriding `intrinsicContentSize`)
 /// - a placeholder string
-public class LKTextView: NSTextView {
+class LKTextView: NSTextView {
     
     // Auto Layout stuff
-    override public var intrinsicContentSize: NSSize {
+    override var intrinsicContentSize: NSSize {
         guard let manager = textContainer?.layoutManager else { return .zero }
         
         manager.ensureLayout(for: textContainer!)
@@ -59,7 +58,7 @@ public class LKTextView: NSTextView {
 
 
 /// LKTextView subclass that can highlight the matches of a regular expression
-public class LKMatchResultHighlightingTextView: LKTextView {
+class LKMatchResultHighlightingTextView: LKTextView {
     
     /// NSView subclass to highlight part of a regex match in a text view
     private class LKMatchHighlightView: NSView {
@@ -123,12 +122,12 @@ public class LKMatchResultHighlightingTextView: LKTextView {
         }
     }
     
-    public func removeAllHighlights() {
+    func removeAllHighlights() {
         self.highlightViews.forEach { $0.removeFromSuperview() }
         self.highlightViews.removeAll()
     }
     
-    public func updateHighlights(forMatches matches: RegEx.MatchCollection) {
+    func updateHighlights(forMatches matches: RegEx.MatchCollection) {
         // Remove all old highlights
         self.removeAllHighlights()
         
@@ -178,7 +177,7 @@ public class LKMatchResultHighlightingTextView: LKTextView {
     }
     
     
-    public func didHover(over point: NSPoint) {
+    func didHover(over point: NSPoint) {
         guard let highlightView = self.highlightViews.first(where: { $0.kind == .fullMatch && $0.frame.contains(point) }) else {
             // we're hovering over an un-highlighted part of the text view
             currentlyHoveredHighlightView = nil

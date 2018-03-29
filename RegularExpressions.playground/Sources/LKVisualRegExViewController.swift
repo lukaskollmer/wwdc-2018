@@ -2,11 +2,6 @@ import AppKit
 import PlaygroundSupport
 
 /*
- LKVisualRegExViewController.swift
- 
- This file implements `LKVisualRegExViewController`, a subclass of NSViewController that can be used to visualize a regular expression.
- 
- 
  Notes:
  - For performance reasons, we always use `Collection.forEach(:_)` instead of `for in` loops
  Why? Xcode visualizes `for in` loops, either by counting the number of iterations or by actually logging all objects.
@@ -14,26 +9,13 @@ import PlaygroundSupport
  - i'd love to make the RegEx Options popover detachable, so that it doesn't hide the text view
  and it'd be easier to see how changing individual options affects the regex matches.
  However, detached popovers don't work properly in playgrounds (the arrow doesn't disappear and there are some glitches around the close button) (rdar://38598185)
- 
- TODO
- - have altrnating colors to differentiate between matches that are directly following each other
- - add a (i) button to the top right corner that shows some sort or info/about window explaining how this works / what it can do
- - it seems like the left social button isn't quite on the same line as the border of the text view // FIXME
- - the options ui should not appear on top of the text view, that'd make it easier to see how changing the options will influence the matches
- - what about a "replace" feature?
- - add some separator between matches that are directly next to each other (eg /o/ matching against 'foo')
- or give the match highlight views a border on the left and right edge?
- this could also be fixed by having alternating colors for individual matches
- 
- IDEAS:
- - make a regex to filter all swift files in a list of filenames
  */
 
 
-// based on https://stackoverflow.com/a/25952895/2513803
 private extension NSImage {
     func tinted(withColor tint: NSColor) -> NSImage {
         guard let tinted = self.copy() as? NSImage else { return self }
+        
         tinted.lockFocus()
         tint.set()
         
@@ -45,8 +27,15 @@ private extension NSImage {
     }
 }
 
+private extension NSButton {
+    convenience init(title: String) {
+        self.init(title: title, target: nil, action: nil)
+    }
+}
 
 
+// The size of the live visualizer
+// You can edit width or height to change the visualizer's size (the visualizer uses AutoLayout and works fine with any size)
 private let SIZE = CGRect(x: 0, y: 0, width: 450, height: 600)
 
 
@@ -56,7 +45,6 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     // Title Bar
     private let titleLabel = NSTextField(labelWithString: "Visual RegEx")
     private let subtitleLabel = NSTextField(labelWithString: "by Lukas Kollmer")
-    
     
     // Regex Text Field
     private let regexTextFieldTitleLabel = NSTextField(labelWithString: "Regular Expression")
@@ -70,21 +58,14 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     private let regexTestStringTextView = LKMatchResultHighlightingTextView()
     
     // Settings
-    private let regexOptionsButton = NSButton(title: "RegEx Options", target: nil, action: nil)
+    private let regexOptionsButton = NSButton(title: "RegEx Options")
     
     // Social Row
-    private let leftSocialButton  = NSButton(title: "lukaskollmer.me", target: nil, action: nil)
-    private let rightSocialButton = NSButton(title: "github.com/lukaskollmer", target: nil, action: nil)
+    private let leftSocialButton  = NSButton(title: "lukaskollmer.me")
+    private let rightSocialButton = NSButton(title: "github.com/lukaskollmer")
     
     
     // MARK: View Controller lifecycle
-    
-    public init() {
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    // Not actually called, but required bc we override the default initializer
-    public required init?(coder: NSCoder) { fatalError() }
     
     override public func loadView() {
         self.view = NSView(frame: SIZE)
@@ -95,11 +76,11 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         super.viewDidLoad()
         
         // Title
-        titleLabel.font = NSFont.systemFont(ofSize: 20, weight: .medium)
+        titleLabel.font = .systemFont(ofSize: 20, weight: .medium)
         titleLabel.alignment = .center
         
         // Subtitle
-        subtitleLabel.font = NSFont.systemFont(ofSize: 15, weight: .light)
+        subtitleLabel.font = .systemFont(ofSize: 15, weight: .light)
         subtitleLabel.alignment = .center
         
         // Regex Entry
@@ -117,8 +98,8 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         
         
         // Regex / test string title labels
-        [self.regexTextFieldTitleLabel, self.regexTestStringTextViewTitleLabel].forEach {
-            $0.font = NSFont.systemFont(ofSize: 13.5, weight: NSFont.Weight.medium)
+        [regexTextFieldTitleLabel, regexTestStringTextViewTitleLabel].forEach {
+            $0.font = .systemFont(ofSize: 13.5, weight: .medium)
         }
         
         setupTextView(regexTestStringTextView, inScrollView: regexTestStringTextViewContainingScrollView)
@@ -136,14 +117,14 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
             regexTestStringTextViewContainingScrollView,
             regexOptionsButton,
             leftSocialButton, rightSocialButton
-        ].forEach(self.view.addSubview)
+        ].forEach(view.addSubview)
         
         //
         // Auto Layout
         //
         
         let defaultOffset: CGFloat = 12
-        let defaultSpacing = defaultOffset - 7 // 5
+        let defaultSpacing = defaultOffset - 7
         
         let fullWidthInsets = NSEdgeInsets(top: 0, left: defaultOffset, bottom: 0, right: -defaultOffset)
         
@@ -162,9 +143,10 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
             (regexTestStringTextViewTitleLabel, defaultOffset),
             (regexTestStringTextViewContainingScrollView, defaultSpacing)
         ]
-        layout.suffix(from: 1).enumerated().forEach { (index: Int, element: (view: NSView, offset: CGFloat)) in
-            element.view.topToBottom(of: layout[index].view, offset: element.offset)
-            element.view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
+        layout.suffix(from: 1).enumerated().forEach { (index: Int, element: (NSView, CGFloat)) in
+            let (view, offset) = element
+            view.topToBottom(of: layout[index].view, offset: offset)
+            view.edgesToSuperview(excluding: [.top, .bottom], insets: fullWidthInsets)
         }
         
         regexTextViewContainingScrollView.borderType = .bezelBorder
@@ -217,15 +199,13 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         
         // Setup the regex compilation error indicator
         regexTextView.addSubview(regexCompilationErrorImageView)
-        regexCompilationErrorImageView.edgesToSuperview(excluding: [.left], insets: NSEdgeInsets(top: 0, left: 0, bottom: 0, right: -5))
+        regexCompilationErrorImageView.edgesToSuperview(excluding: .left, insets: NSEdgeInsets(top: 0, left: 0, bottom: 0, right: -5))
         regexCompilationErrorImageView.isHidden = true
         
         
-        // Register observers and set default values
-        
+        // Set delegates and default contents
         regexTextView.delegate = self
         regexTestStringTextView.delegate = self
-        
         regexTextView.string = Defaults.regex
         regexTestStringTextView.string = Defaults.testInput
     }
@@ -242,8 +222,8 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         updateMatches()
         
         // Adding the tracking area to `self.view` instead of the text view means that we also get hover events when the text view isn't first responder
-        let trackingArea = NSTrackingArea(rect: self.view.frame, options: [.mouseMoved, .activeAlways], owner: self, userInfo: nil)
-        self.view.addTrackingArea(trackingArea)
+        let trackingArea = NSTrackingArea(rect: view.frame, options: [.mouseMoved, .activeAlways], owner: self, userInfo: nil)
+        view.addTrackingArea(trackingArea)
     }
     
     
@@ -281,31 +261,31 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     }
     
     override public func mouseMoved(with event: NSEvent) {
-        let location = self.regexTestStringTextView.convert(event.locationInWindow, from: self.view)
-        self.regexTestStringTextView.didHover(over: location)
+        let location = regexTestStringTextView.convert(event.locationInWindow, from: view)
+        regexTestStringTextView.didHover(over: location)
     }
     
     public func textDidChange(_ notification: Notification) {
         guard let textView = notification.object as? NSTextView else { return }
         
-        if textView == self.regexTextView {
+        if textView == regexTextView {
             textView.invalidateIntrinsicContentSize()
             Defaults.regex = textView.string
             updateMatches()
-        } else if textView == self.regexTestStringTextView {
+        } else if textView == regexTestStringTextView {
             Defaults.testInput = textView.string
             updateMatches()
         }
     }
     
     // prevent newlines in the regex text view
-    public func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
-        return textView == self.regexTextView && replacementString == "\n" ? false : true
-    }
+    //public func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
+    //    return textView == regexTextView && replacementString == "\n" ? false : true
+    //}
     
     lazy var optionsPopover: NSPopover = {
         let popover = NSPopover()
-        popover.contentViewController = LKOptionsViewController(changeHandler: self.updateMatches)
+        popover.contentViewController = LKOptionsViewController(changeHandler: updateMatches)
         popover.behavior = .semitransient
         popover.appearance = NSAppearance(named: .vibrantLight)
         return popover
@@ -323,7 +303,6 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
     // MARK: Regex Matching
     
     private func updateMatches() {
-        
         let regex: RegEx
         do {
             regex = try RegEx(Defaults.regex, options: Defaults.regexOptions)
@@ -337,18 +316,18 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
             return
         }
         
-        regexTestStringTextView.updateHighlights(forMatches: regex.matches(in: Defaults.testInput))
-        
+        // Hide the error indicator
         regexCompilationErrorImageView.isHidden = true
         regexCompilationErrorImageView.toolTip = nil
+        
+        // Uodate the matches in the test string
+        regexTestStringTextView.updateHighlights(forMatches: regex.matches(in: Defaults.testInput))
     }
 }
 
 
 public extension LKVisualRegExViewController {
     static func show() {
-        NSSetUncaughtExceptionHandler { exc in fatalError(exc.debugDescription) }
         PlaygroundPage.current.liveView = LKVisualRegExViewController()
     }
 }
-

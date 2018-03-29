@@ -10,7 +10,6 @@ private extension NSEdgeInsets {
 /// This info includes the matched range, substring, and the info about all capture groups
 /// This is the view controller shown in a popover when hovering over match results
 class LKMatchInfoViewController: NSViewController {
-    
     let match: RegEx.Result
     
     init(match: RegEx.Result) {

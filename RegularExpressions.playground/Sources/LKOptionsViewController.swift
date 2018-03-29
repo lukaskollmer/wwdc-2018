@@ -1,24 +1,24 @@
 import AppKit
 
-public class LKOptionsViewController: NSViewController {
+/// LKOptionsViewController shows a list of all options defined in `RegEx.Options`
+/// Toggling one of the checkboxes will automaticaslly update the settings and invoke the `changeHandler` closure
+class LKOptionsViewController: NSViewController {
+    let changeHandler: () -> Void
     
-    public let changeHandler: () -> Void
-    
-    public init(changeHandler: @escaping () -> Void) {
+    init(changeHandler: @escaping () -> Void) {
         self.changeHandler = changeHandler
         super.init(nibName: nil, bundle: nil)
     }
     
-    public required init?(coder: NSCoder) { fatalError() }
+    required init?(coder: NSCoder) { fatalError() }
     
-    override public func loadView() {
+    override func loadView() {
         self.view = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 0))
         
         let container = NSView()
         view.addSubview(container)
         
         container.edgesToSuperview(insets: NSEdgeInsets(top: 12, left: 8, bottom: 8, right: -8))
-        
         
         let buttons: [NSButton] = NSRegularExpression.Options.all.map { option in
             let button = NSButton()

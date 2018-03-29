@@ -1,17 +1,9 @@
 import Foundation
 
 
-extension String {
-    public var range: NSRange {
+private extension String {
+    var range: NSRange {
         return NSRange(location: 0, length: self.count)
-    }
-
-    public func replacing(regularExpression: RegEx, withTemplate template: String) -> String {
-        return regularExpression.replace(in: self, withTemplate: template)
-    }
-
-    public func split(regularExpression: RegEx) -> [String] {
-        return regularExpression.split(self)
     }
 }
 
@@ -61,25 +53,25 @@ public struct RegEx {
 
         /// Access the contents of a specific capture group
         public subscript(index: Int) -> String {
-            get { return self.contents(ofCaptureGroup: index) }
+            get { return contents(ofCaptureGroup: index) }
         }
 
         /// Access the contents of a specific capture group
         public subscript(name: String) -> String {
-            get { return self.contents(ofCaptureGroup: name) }
+            get { return contents(ofCaptureGroup: name) }
         }
 
 
         /// Access the contents of the capture group w/ a specific index
         /// Passing the index of a non-existent capture group is UB
         public func contents(ofCaptureGroup groupIndex: Int) -> String {
-            return NSString(string: initialString).substring(with: self.result.range(at: groupIndex))
+            return initialString.substring(withRange: range(ofCaptureGroup: groupIndex))
         }
 
         /// Access the contents of the capture group w/ a specific name
         /// Passing the name of a non-existent capture group is UB
         public func contents(ofCaptureGroup groupName: String) -> String {
-            return NSString(string: initialString).substring(with: self.result.range(withName: groupName))
+            return initialString.substring(withRange: range(ofCaptureGroup: groupName))
         }
         
         /// Get the total number of capture groups
@@ -87,8 +79,14 @@ public struct RegEx {
             return self.result.numberOfRanges
         }
         
+        /// Get the range of the group with the specified index
         public func range(ofCaptureGroup groupIndex: Int) -> NSRange {
             return self.result.range(at: groupIndex)
+        }
+        
+        /// Get the range of the group with the specified name
+        public func range(ofCaptureGroup groupName: String) -> NSRange {
+            return self.result.range(withName: groupName)
         }
         
         /// Enumerate all capture groups
@@ -108,29 +106,17 @@ public struct RegEx {
 
     public let regex: NSRegularExpression
     
-
     /// Create a new RegEx from a pattern and some options
-    ///
-    /// - Parameters:
-    ///   - pattern: The regular expression's pattern
-    ///   - options: Some options
     public init(_ pattern: String, options: RegEx.Options = []) throws {
         self.regex = try NSRegularExpression(pattern: pattern, options: options)
     }
 
-    /// Create a new RegEx object from a NSRegularExpression objecr
-    ///
-    /// - Parameter regularExpression: A NSRegularExpression object
+    /// Create a new RegEx object from a NSRegularExpression object
     public init(_ regularExpression: NSRegularExpression) {
         self.regex = regularExpression
     }
 
     /// Match a regular expression against a string
-    ///
-    /// - Parameters:
-    ///   - string: The string to match againsr
-    ///   - options: Matching options
-    /// - Returns: An array of matches
     public func matches(in string: String) -> RegEx.MatchCollection {
         let matches = self.regex.matches(in: string, options: [], range: string.range).enumerated().map {
             return RegEx.Result(result: $1, initialString: string, index: $0, regex: self)
@@ -147,8 +133,8 @@ public struct RegEx {
     /// String substitution w/ named capture support
     public func replace(in string: String, withTemplate template: String) -> String {
         // Instead of forwarding the `replace` call to -[NSRegularExpression stringByReplacingMatchesInString:options:range:withTemplate:]
-        // we implement parts of this ourselves to detect and proprtly handle named capture groups.
-        // Why? NSRegularExpression doesn't yet fully support named capture (you can use named groups in the regex and the matches, but template substitution will ignore named groups). See also DTS #686210772 and radar://38426586
+        // we implement parts of this ourselves to detect and properly handle named capture groups.
+        // Why? NSRegularExpression doesn't (yet?) fully support named capture (you can use named groups in the regex and the matches, but template substitution will ignore named groups). See also DTS #686210772 and radar://38426586
         
         typealias Substitution = (groupName: String, beginning: Int, end: Int)
         
@@ -213,7 +199,18 @@ public struct RegEx {
         let groupName = "groupName"
         
         // Regular expression that matches a capture group and - if that capture group specifies a name - remembers that name
-        let namedGroupsRegex = try! RegEx("(?<!\\\\) (?: \\((?:\\?<(?<\(groupName)>\\w+)>)? .*? \\) )", options: [.allowCommentsAndWhitespace])
+        let pattern = """
+        (?<!\\\\)                 # negative lookahead - only match unescaped opening parentheses
+        \\(                       # opening parentheses of the group
+          (?:
+            \\?<                  # start of the group name
+            (?<\(groupName)>\\w+) # capture the group name
+            >                     # end of the group name
+          )?                      # match either 0 or 1 group names
+          .*                      # match the rest of the group's contents
+        \\)                       # closing parentheses of the group
+        """
+        let namedGroupsRegex = try! RegEx(pattern, options: .allowCommentsAndWhitespace)
         
         return namedGroupsRegex.matches(in: self.regex.pattern)
             .filter { $0.result.range(withName: groupName) != NSRange(location: NSNotFound, length: 0) }
@@ -274,23 +271,21 @@ extension RegEx {
 }
 
 
-// MARK: RegEx + Comment Initialization (expreimental) // TODO remove?
-
-public struct Playground {
-    /// Name of the current Playground Page
-    public static var currentPage = ""
-
-    /// Filepath of the Playground
-    public static let directory = "/Users/" + NSUserName() + "/Developer/wwdc-2018/RegularExpressions.playground"
-}
-
+// MARK: RegEx + Comment Initialization (experimental, unused)
 extension RegEx {
-    public init(line: Int = #line, column: Int = #column) throws {
-        let path = Playground.directory + "/Pages/" + Playground.currentPage + ".xcplaygroundpage/Contents.swift"
+    private static let filepath = "/Users/" + NSUserName() + "/Developer/wwdc-2018/RegularExpressions.playground/Contents.swift"
 
-        let data = FileManager.default.contents(atPath: path)!
+    /// This implements an alternative initializer for the `RegEx` struct.
+    /// Instead of passing a string literal (which needs to be escaped), you put a comment between the initializer's opening and closing parentheses
+    /// The contents of that comment will be used as the regex's pattern
+    /// **Note** for this to work, the playground has to be called "RegularExpressions.playground" and be stored at ~/Desktop
+    ///
+    /// Example:
+    /// `let regex = try! RegEx(/*(\w+)*/)`
+    public init(line: Int = #line, column: Int = #column) throws {
+        let data = FileManager.default.contents(atPath: RegEx.filepath)!
         let contents = String(data: data, encoding: .utf8)!.components(separatedBy: "\n")
-        let lineContents = NSString.init(string: contents[line-1])
+        let lineContents = NSString(string: contents[line-1])
 
         let scanner = Scanner(string: lineContents.substring(from: column))
         scanner.scanLocation += 2 // skip the opening '/*'

@@ -1,5 +1,3 @@
-import Foundation
-
 /// Simple string table generator. Used when displaying match infos
 struct LKTextTable {
     let numberOfColumns: Int

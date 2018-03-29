@@ -2,6 +2,8 @@
 
 > A Visual Introduction to Regular Expressions
 
+<br>
+
 ![](screenshots/0.png)
 
 ## License

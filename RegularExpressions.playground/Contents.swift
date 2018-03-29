@@ -265,8 +265,9 @@ try! RegEx("(\\w+), (\\w+)").replace(in: "Tennant, David", withTemplate: "$2 $1"
 try! RegEx("(?<last>\\w+), (?<first>\\w+)").replace(in: "Tennant, David", withTemplate: "${first} ${last}")
 /*:
  - Callout(Exercise): **Extract keys and values from a query string**\
- Write a regular expression that parses a url [query string](https://en.wikipedia.org/wiki/Query_string) and extracts key/value pairs via named using capture groups\
- Sample input: `Texample.com/?&name=Lukas&age=19`
+Write a regular expression that parses a url [query string](https://en.wikipedia.org/wiki/Query_string) and extracts key/value pairs via named using capture groups\
+\
+Sample input: `example.com/?&name=Lukas&age=19`
  */
 /*:
  - Callout(Solution):\
@@ -274,15 +275,14 @@ try! RegEx("(?<last>\\w+), (?<first>\\w+)").replace(in: "Tennant, David", withTe
 _(Copy the pattern and sample url from above into the live view to see the regex in action)_\
 \
 **Explanation**:\
-• `&` is matched literally and marks the beginning of the query string\
-• `(?<key>[a-zA-Z]+)` is a named capture group that matches all lower- and uppercase characters\
+• `&` is matched literally and marks the beginning of a key/value pair\
+• `(?<key>[a-zA-Z]+)` captures the key (lower- and uppercase characters)\
 • `=` matches the separator between the key and the value\
 • `(?<value>[\w-.]+)` captures the value (allowed characters are word characters (`\w`), `-` and `.`
  */
 let matches = try! RegEx("&(?<key>[a-zA-Z]+)=(?<value>[\\w-.]+)").matches(in: "example.com/?&name=Lukas&age=19")
-let parameters: [(key: String, value: String)] =
+let parameters: [(key: String, value: String)] = // open the quick look preview on this line to see the extracted keys and values
     matches.map { ($0["key"], $0["value"]) }
-
 /*:
  - Callout(Exercise): **Verify that a url is valid**\
 Write a regular expression that verifies that a url string is in a valid format\

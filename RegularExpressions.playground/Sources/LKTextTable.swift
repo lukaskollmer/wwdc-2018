@@ -10,7 +10,7 @@ struct LKTextTable {
     }
     
     mutating func addRow(values: [String]) {
-        precondition(values.count == numberOfColumns, "Attempted to add a row with the wrong numbe of columns (got \(values.count), expected \(numberOfColumns))")
+        precondition(values.count == numberOfColumns, "Attempted to add a row with the wrong number of columns (got \(values.count), expected \(numberOfColumns))")
         rows.append(values)
     }
     

@@ -3,27 +3,112 @@
    version = "3.0">
    <TimelineItems>
       <LoggerValueHistoryTimelineItem
-         documentLocation = "file:///Users/lukas/Developer/wwdc-2018/RegularExpressions.playground#CharacterRangeLen=45&amp;CharacterRangeLoc=6213&amp;EndingColumnNumber=0&amp;EndingLineNumber=109&amp;StartingColumnNumber=1&amp;StartingLineNumber=108&amp;Timestamp=544098748.3110451"
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=45&amp;CharacterRangeLoc=6213&amp;EndingColumnNumber=0&amp;EndingLineNumber=109&amp;StartingColumnNumber=1&amp;StartingLineNumber=108&amp;Timestamp=544099190.5045871"
          selectedRepresentationIndex = "0"
          shouldTrackSuperviewWidth = "NO">
       </LoggerValueHistoryTimelineItem>
       <LoggerValueHistoryTimelineItem
-         documentLocation = "file:///Users/lukas/Developer/wwdc-2018/RegularExpressions.playground#CharacterRangeLen=51&amp;CharacterRangeLoc=5990&amp;EndingColumnNumber=0&amp;EndingLineNumber=104&amp;StartingColumnNumber=1&amp;StartingLineNumber=103&amp;Timestamp=544098748.311334"
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=51&amp;CharacterRangeLoc=5990&amp;EndingColumnNumber=0&amp;EndingLineNumber=104&amp;StartingColumnNumber=1&amp;StartingLineNumber=103&amp;Timestamp=544099190.504721"
          selectedRepresentationIndex = "0"
          shouldTrackSuperviewWidth = "NO">
       </LoggerValueHistoryTimelineItem>
       <LoggerValueHistoryTimelineItem
-         documentLocation = "file:///Users/lukas/Developer/wwdc-2018/RegularExpressions.playground#CharacterRangeLen=55&amp;CharacterRangeLoc=6042&amp;EndingColumnNumber=0&amp;EndingLineNumber=105&amp;StartingColumnNumber=1&amp;StartingLineNumber=104&amp;Timestamp=544098748.311446"
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=55&amp;CharacterRangeLoc=6042&amp;EndingColumnNumber=0&amp;EndingLineNumber=105&amp;StartingColumnNumber=1&amp;StartingLineNumber=104&amp;Timestamp=544099190.5048209"
          selectedRepresentationIndex = "0"
          shouldTrackSuperviewWidth = "NO">
       </LoggerValueHistoryTimelineItem>
       <LoggerValueHistoryTimelineItem
-         documentLocation = "file:///Users/lukas/Developer/wwdc-2018/RegularExpressions.playground#CharacterRangeLen=59&amp;CharacterRangeLoc=5736&amp;EndingColumnNumber=0&amp;EndingLineNumber=100&amp;StartingColumnNumber=1&amp;StartingLineNumber=99&amp;Timestamp=544098748.311559"
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=59&amp;CharacterRangeLoc=5736&amp;EndingColumnNumber=0&amp;EndingLineNumber=100&amp;StartingColumnNumber=1&amp;StartingLineNumber=99&amp;Timestamp=544099190.504917"
          selectedRepresentationIndex = "0"
          shouldTrackSuperviewWidth = "NO">
       </LoggerValueHistoryTimelineItem>
       <LoggerValueHistoryTimelineItem
-         documentLocation = "file:///Users/lukas/Developer/wwdc-2018/RegularExpressions.playground#CharacterRangeLen=43&amp;CharacterRangeLoc=4995&amp;EndingColumnNumber=0&amp;EndingLineNumber=86&amp;StartingColumnNumber=1&amp;StartingLineNumber=85&amp;Timestamp=544098748.311718"
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=43&amp;CharacterRangeLoc=4995&amp;EndingColumnNumber=0&amp;EndingLineNumber=86&amp;StartingColumnNumber=1&amp;StartingLineNumber=85&amp;Timestamp=544099190.50501"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=44&amp;CharacterRangeLoc=5192&amp;EndingColumnNumber=0&amp;EndingLineNumber=90&amp;StartingColumnNumber=1&amp;StartingLineNumber=89&amp;Timestamp=544099190.5051"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=48&amp;CharacterRangeLoc=5237&amp;EndingColumnNumber=0&amp;EndingLineNumber=91&amp;StartingColumnNumber=1&amp;StartingLineNumber=90&amp;Timestamp=544099190.505188"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=54&amp;CharacterRangeLoc=5480&amp;EndingColumnNumber=0&amp;EndingLineNumber=95&amp;StartingColumnNumber=1&amp;StartingLineNumber=94&amp;Timestamp=544099190.505277"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=55&amp;CharacterRangeLoc=5535&amp;EndingColumnNumber=0&amp;EndingLineNumber=96&amp;StartingColumnNumber=1&amp;StartingLineNumber=95&amp;Timestamp=544099190.505365"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=43&amp;CharacterRangeLoc=7115&amp;EndingColumnNumber=0&amp;EndingLineNumber=123&amp;StartingColumnNumber=1&amp;StartingLineNumber=122&amp;Timestamp=544099190.505451"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=43&amp;CharacterRangeLoc=7071&amp;EndingColumnNumber=0&amp;EndingLineNumber=122&amp;StartingColumnNumber=1&amp;StartingLineNumber=121&amp;Timestamp=544099190.505538"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=48&amp;CharacterRangeLoc=6693&amp;EndingColumnNumber=0&amp;EndingLineNumber=116&amp;StartingColumnNumber=1&amp;StartingLineNumber=115&amp;Timestamp=544099190.5056241"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=52&amp;CharacterRangeLoc=6640&amp;EndingColumnNumber=0&amp;EndingLineNumber=115&amp;StartingColumnNumber=1&amp;StartingLineNumber=114&amp;Timestamp=544099190.505713"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=57&amp;CharacterRangeLoc=7564&amp;EndingColumnNumber=0&amp;EndingLineNumber=131&amp;StartingColumnNumber=1&amp;StartingLineNumber=130&amp;Timestamp=544099190.5058"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=63&amp;CharacterRangeLoc=7500&amp;EndingColumnNumber=0&amp;EndingLineNumber=130&amp;StartingColumnNumber=1&amp;StartingLineNumber=129&amp;Timestamp=544099190.505887"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=58&amp;CharacterRangeLoc=7441&amp;EndingColumnNumber=0&amp;EndingLineNumber=129&amp;StartingColumnNumber=1&amp;StartingLineNumber=128&amp;Timestamp=544099190.5059741"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=55&amp;CharacterRangeLoc=8528&amp;EndingColumnNumber=0&amp;EndingLineNumber=145&amp;StartingColumnNumber=1&amp;StartingLineNumber=144&amp;Timestamp=544099190.506062"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=56&amp;CharacterRangeLoc=9215&amp;EndingColumnNumber=0&amp;EndingLineNumber=155&amp;StartingColumnNumber=1&amp;StartingLineNumber=154&amp;Timestamp=544099190.506251"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=50&amp;CharacterRangeLoc=12224&amp;EndingColumnNumber=0&amp;EndingLineNumber=211&amp;StartingColumnNumber=1&amp;StartingLineNumber=210&amp;Timestamp=544099190.506375"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=85&amp;CharacterRangeLoc=14606&amp;EndingColumnNumber=0&amp;EndingLineNumber=264&amp;StartingColumnNumber=1&amp;StartingLineNumber=263&amp;Timestamp=544099190.50648"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=46&amp;CharacterRangeLoc=1578&amp;EndingColumnNumber=47&amp;EndingLineNumber=28&amp;StartingColumnNumber=1&amp;StartingLineNumber=28&amp;Timestamp=544099190.506573"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/lukas/Desktop/RegularExpressions.playground#CharacterRangeLen=41&amp;CharacterRangeLoc=3275&amp;EndingColumnNumber=0&amp;EndingLineNumber=55&amp;StartingColumnNumber=1&amp;StartingLineNumber=54&amp;Timestamp=544099190.506664"
          selectedRepresentationIndex = "0"
          shouldTrackSuperviewWidth = "NO">
       </LoggerValueHistoryTimelineItem>

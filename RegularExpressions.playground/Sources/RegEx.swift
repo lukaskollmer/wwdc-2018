@@ -228,7 +228,7 @@ extension RegEx : ExpressibleByStringLiteral {
 extension RegEx {
     /// A Collection of regex matches
     ///
-    /// Instead of simply returning Array<RegEx.Result>, we return a custom sequence that also stores the string the regex was matched against
+    /// Instead of simply returning Array<RegEx.Result>, we return a custom collection that also stores the string the regex was matched against
     /// This allows us to still get access to the matched string, even if the regex produces 0 matches in the string
     /// Why do we need this? The inline preview (see RegExMatchCollection+CustomPlaygroundQuickLookable.swift) needs to know the string the pattern was matched against, in order to highlight the matches
     /// We could access the string via one of the matches, but that means that we can't get it when there are 0 matches

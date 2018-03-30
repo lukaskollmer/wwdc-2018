@@ -15,14 +15,14 @@ private extension NSRect {
 /// Subclasses of NSScrollView that implements an auto-expanding multiline text view
 class LKScrollView: NSScrollView {
     override var intrinsicContentSize: NSSize {
-        // TODO guard let the text container as well!
         guard
             let textView = self.documentView as? NSTextView,
+            let textContainer = textView.textContainer,
             let layoutManager = textView.layoutManager
-            else { return .zero }
+        else { return .zero }
         
-        layoutManager.ensureLayout(for: textView.textContainer!)
-        return layoutManager.usedRect(for: textView.textContainer!).size
+        layoutManager.ensureLayout(for: textContainer)
+        return layoutManager.usedRect(for: textContainer).size
     }
 }
 
@@ -34,10 +34,13 @@ class LKTextView: NSTextView {
     
     // Auto Layout stuff
     override var intrinsicContentSize: NSSize {
-        guard let manager = textContainer?.layoutManager else { return .zero }
+        guard
+            let textContainer = self.textContainer,
+            let layoutManager = self.layoutManager
+        else { return .zero }
         
-        manager.ensureLayout(for: textContainer!)
-        return manager.usedRect(for: textContainer!).size
+        layoutManager.ensureLayout(for: textContainer)
+        return layoutManager.usedRect(for: textContainer).size
     }
     
     public var placeholder: String = "" {

@@ -39,10 +39,6 @@ public struct RegEx {
 
 
         /// Create a new RegEx.Result from a NSTextCheckingResult object
-        ///
-        /// - Parameters:
-        ///   - result: The result this match represents
-        ///   - initialString: The full string the regex was matched against
         init(result: NSTextCheckingResult, initialString: String, index: Int, regex: RegEx) {
             self.result = result
             self.initialString = initialString
@@ -273,7 +269,7 @@ extension RegEx {
 
 // MARK: RegEx + Comment Initialization (experimental, unused)
 extension RegEx {
-    private static let filepath = "/Users/" + NSUserName() + "/Developer/wwdc-2018/RegularExpressions.playground/Contents.swift"
+    private static let filepath = "/Users/" + NSUserName() + "/Desktop/RegularExpressions.playground/Contents.swift"
 
     /// This implements an alternative initializer for the `RegEx` struct.
     /// Instead of passing a string literal (which needs to be escaped), you put a comment between the initializer's opening and closing parentheses

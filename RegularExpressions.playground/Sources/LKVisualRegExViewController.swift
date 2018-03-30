@@ -278,11 +278,6 @@ public class LKVisualRegExViewController: NSViewController, NSTextViewDelegate {
         }
     }
     
-    // prevent newlines in the regex text view
-    //public func textView(_ textView: NSTextView, shouldChangeTextIn affectedCharRange: NSRange, replacementString: String?) -> Bool {
-    //    return textView == regexTextView && replacementString == "\n" ? false : true
-    //}
-    
     lazy var optionsPopover: NSPopover = {
         let popover = NSPopover()
         popover.contentViewController = LKOptionsViewController(changeHandler: updateMatches)

@@ -331,6 +331,7 @@ _(Copy the pattern and sample urls from above into the live view to see the rege
 `$                # match the end of the input`
  */
 //: ## More resources
+//: - [This playground on GitHub](https://github.com/lukaskollmer/wwdc-2018)
 //: - [Official unicode spec](http://www.unicode.org/reports/tr18/)
 //: - [Official ICU documentation](http://userguide.icu-project.org/strings/regexp)
 //: - Foundation's regular expressions implementation:
